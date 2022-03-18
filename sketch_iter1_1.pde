@@ -46,12 +46,14 @@ float plateVelocityY = 0;
 float pVelocityDecay = 0.5;
 float plateMass = 200;
 float plateMassFactor = 1;
+boolean isPlateVelocityChanged = false;
 
 float ballVelocityX = 0;
 float ballVelocityY = 0;
 float ballRadius = 1;
 float ballMass = 250;
 float ballMassFactor = 1;
+boolean isBallVelocityChanged = false;
 
 
 // other variables
@@ -175,16 +177,16 @@ void setup() {
   world.add(ball);
   world.add(basePlate);
 
-    /* Setup the Virtual Coupling Contact Rendering Technique */
-  sensor = new HVirtualCoupling((0.5)); 
-  sensor.h_avatar.setDensity(50); 
-  sensor.h_avatar.setFill(255,0,0); 
-  sensor.h_avatar.setSensor(true);
+  /* Setup the Virtual Coupling Contact Rendering Technique */
+  //sensor = new HVirtualCoupling((0.5)); 
+  //sensor.h_avatar.setDensity(50); 
+  //sensor.h_avatar.setFill(255,0,0); 
+  //sensor.h_avatar.setSensor(true);
 
   
   world.setGravity(0,0);
   world.setGrabbable(false);
-  sensor.init(world, worldWidth/2, boundarySize + 5);
+  //sensor.init(world, worldWidth/2, boundarySize + 5);
   
   world.draw();
 
@@ -205,17 +207,17 @@ class SimulationThread implements Runnable{
   public void run(){
     renderingForce = true;
 
-    if(haplyBoard.data_available()){
-      /* GET END-EFFECTOR STATE (TASK SPACE) */
-      widgetOne.device_read_data();
+    //if(haplyBoard.data_available()){
+    //  /* GET END-EFFECTOR STATE (TASK SPACE) */
+    //  widgetOne.device_read_data();
     
-      angles.set(widgetOne.get_device_angles()); 
-      posEE.set(widgetOne.get_device_position(angles.array()));
-      posEE.set(posEE.copy().mult(200));  
-    }
+    //  angles.set(widgetOne.get_device_angles()); 
+    //  posEE.set(widgetOne.get_device_position(angles.array()));
+    //  posEE.set(posEE.copy().mult(200));  
+    //}
 
-    sensor.setToolPosition(worldWidth/4 - (2.5*(posEE).x), (boundarySize) + (2*(posEE).y) - 6); 
-    sensor.updateCouplingForce();
+    //sensor.setToolPosition(worldWidth/4 - (2.5*(posEE).x), (boundarySize) + (2*(posEE).y) - 6); 
+    //sensor.updateCouplingForce();
 
     if(basePlate.isTouchingBody(ball)){
 
@@ -239,11 +241,11 @@ class SimulationThread implements Runnable{
     plateVelocity.setValue((float) Math.sqrt(Math.pow(plateVelocityX, 2) + Math.pow(plateVelocityY, 2)));
     ballVelocity.setValue((float) Math.sqrt(Math.pow(ballVelocityX, 2) + Math.pow(ballVelocityY, 2)));
     
-    sensor.h_avatar.setDamping(dampingForce);
+    //sensor.h_avatar.setDamping(dampingForce);
     // fEE.set(sensor.getVirtualCouplingForceX(), sensor.getVirtualCouplingForceY());
     
-    torques.set(widgetOne.set_device_torques(fEE.array()));
-    widgetOne.device_write_torques();
+    //torques.set(widgetOne.set_device_torques(fEE.array()));
+    //widgetOne.device_write_torques();
 
     world.step();
 
@@ -272,6 +274,7 @@ void keyPressed(){
           plateVelocityX = Math.signum(plateVelocityX) * (Math.abs(plateVelocityX) - 10);
           plateVelocityY = Math.signum(plateVelocityY) * (Math.abs(plateVelocityY) - 10);
         }
+        isPlateVelocityChanged = true;
         break;
       case 'w':
         plateVelocity.setValue(plateVelocity.getValue() + 10);
@@ -279,6 +282,7 @@ void keyPressed(){
           plateVelocityX = Math.signum(plateVelocityX) * (Math.abs(plateVelocityX) + 10);
           plateVelocityY = Math.signum(plateVelocityY) * (Math.abs(plateVelocityY) + 10);
         }
+        isPlateVelocityChanged = true;
         break;
       case 'e':
         plateM.setValue(plateM.getValue()- 1);
@@ -304,6 +308,7 @@ void keyPressed(){
           ballVelocityX = Math.signum(ballVelocityX) * (Math.abs(ballVelocityX) - 10);
           ballVelocityY = Math.signum(ballVelocityY) * (Math.abs(ballVelocityY) - 10);
         }
+        isBallVelocityChanged = true;
         break;
       case 'i':
         ballVelocity.setValue(ballVelocity.getValue() + 10);
@@ -311,6 +316,7 @@ void keyPressed(){
           ballVelocityX = Math.signum(ballVelocityX) * (Math.abs(ballVelocityX) + 10);
           ballVelocityY = Math.signum(ballVelocityY) * (Math.abs(ballVelocityY) + 10);
         }
+        isBallVelocityChanged = true;
         break;
       case 'o':
         ballM.setValue(ballM.getValue() - 1);
@@ -327,8 +333,15 @@ void keyPressed(){
         }  
         break;
     }
-    basePlate.setDensity((plateMass * plateMassFactor) / basePlate.getWidth() * basePlate.getHeight());
-    ball.setDensity((float) ((ballMass * ballMassFactor)/ Math.PI * Math.pow(ballRadius , 2)));
+    if(isPlateVelocityChanged){
+      basePlate.setDensity((plateMass * plateMassFactor) / basePlate.getWidth() * basePlate.getHeight());
+      isPlateVelocityChanged = false;
+    }
+      
+    if(isBallVelocityChanged){
+      ball.setDensity((float) ((ballMass * ballMassFactor)/ Math.PI * Math.pow(ballRadius , 2)));
+      isBallVelocityChanged = false;
+    }
   }
   
 }
