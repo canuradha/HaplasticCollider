@@ -61,6 +61,7 @@ PVector           torques                             = new PVector(0, 0);
 PVector           posEE                               = new PVector(0, 0);
 PVector           fEE                                 = new PVector(0, 0); 
 
+
 /* World boundaries */
 FWorld            world;
 float             worldWidth                          = 25.0;  
@@ -78,12 +79,29 @@ HVirtualCoupling  s;
 FCircle well1; 
 FCircle well2;
 FCircle well3;
+FCircle well1_1;
 
-/* define game start */
-boolean           direction                          = false;
+
 
 /* text font */
 PFont             f;
+
+/* Gravitational force equation */
+float             grav_const                         = 6.7;
+float             hap_mass                           = 8;
+float             mass1                              = 6;
+float             mass2                              = 0;
+float             mass3                              = 0;
+float             gravforce_x                        = 0;
+float             gravforce_y                        = 0;
+float             gravforce                          = 0;
+
+float             rEE                                = 0.006;
+float             distance                           = 0;
+float             direction_x                          = 0;
+float             direction_y                        = 0;
+float             angle                              = 0;
+
 
 /* end elements definition *********************************************************************************************/  
 
@@ -135,21 +153,28 @@ void setup(){
   well1 = new FCircle(2.0);
   well1.setPosition(edgeTopLeftX+worldWidth/2.0, edgeTopLeftY+worldHeight/2.0+0.5);
   well1.setStaticBody(true);
-  well1.setSensor(true);
+  well1.setSensor(false);
   well1.setFill(0);
   world.add(well1);
+  
+  well1_1 = new FCircle(3.0);
+  well1_1.setPosition(edgeTopLeftX+worldWidth/2.0, edgeTopLeftY+worldHeight/2.0+0.5);
+  well1_1.setStaticBody(true);
+  well1_1.setSensor(false);
+  well1_1.setFill(0,200,0);
+  world.add(well1_1);
   
   well2 = new FCircle(3.0);
   well2.setPosition(edgeTopLeftX+worldWidth/4.0, edgeTopLeftY+worldHeight/3.0-1);
   well2.setStaticBody(true);
-  well2.setSensor(true);
+  well2.setSensor(false);
   well2.setFill(0);
   world.add(well2);
   
   well3 = new FCircle(1.0);
   well3.setPosition(edgeTopLeftX+worldWidth/4.0*3, edgeTopLeftY+worldHeight/3.0*2+1);
   well3.setStaticBody(true);
-  well3.setSensor(true);
+  well3.setSensor(false);
   well3.setFill(0);
   world.add(well3);
   
@@ -157,7 +182,7 @@ void setup(){
   s                   = new HVirtualCoupling((0.75)); 
   s.h_avatar.setDensity(4); 
   s.h_avatar.setFill(255,0,0); 
-  s.h_avatar.setSensor(true);
+  s.h_avatar.setSensor(false);
 
   s.init(world, edgeTopLeftX+worldWidth/2, edgeTopLeftY+2); 
   
@@ -221,7 +246,7 @@ class SimulationThread implements Runnable{
     fEE.div(100000); //dynes to newtons
     
     //Moving well1 from side to side in a cycle
-    if(well1.getX() < 20 && direction == false){
+  /*  if(well1.getX() < 20 && direction == false){
       well1.setPosition(well1.getX()+0.002, well1.getY());
     } else if(well1.getX()<20 && direction == true){
       well1.setPosition(well1.getX()-0.002, well1.getY());
@@ -233,7 +258,7 @@ class SimulationThread implements Runnable{
     if(well1.getX() > 20){
       well1.setPosition(well1.getX()-0.002, well1.getY());
       direction = true;
-    }
+    } */
       
     //Generating the gravity well force
      //if(abs(s.getToolPositionX()-well1.getX())< 2 && abs(s.getToolPositionY()-(well1.getY())) < 2){
@@ -242,39 +267,69 @@ class SimulationThread implements Runnable{
      //}
      
      //Force for Well 1 (Center well) - Magnitude *2
-     if(abs(s.h_avatar.getX()-well1.getX())< 2 && abs(s.h_avatar.getY()-(well1.getY())) < 2){
-       if(abs(s.h_avatar.getX()-well1.getX()) > 0.5 && abs(well1.getY()-s.h_avatar.getY()) > 0.5){
-         //fEE.set((1/(s.h_avatar.getX()-well1.getX()))*3, (1/(well1.getY()-s.h_avatar.getY()))*3);
-         fEE.set(2/((s.h_avatar.getX()-well1.getX())*abs((s.h_avatar.getX()-well1.getX()))), 
-                 2/((well1.getY()-s.h_avatar.getY())*abs(well1.getY()-s.h_avatar.getY())));
-       } else {
-         fEE.set((s.h_avatar.getX()-well1.getX())*2, (well1.getY()-s.h_avatar.getY())*2);
-       }
+     //if(abs(s.h_avatar.getX()-well1.getX())< 2 && abs(s.h_avatar.getY()-(well1.getY())) < 2){
+     //  if(abs(s.h_avatar.getX()-well1.getX()) > 0.5 && abs(well1.getY()-s.h_avatar.getY()) > 0.5){
+     //    //fEE.set((1/(s.h_avatar.getX()-well1.getX()))*3, (1/(well1.getY()-s.h_avatar.getY()))*3);
+     //    fEE.set(2/((s.h_avatar.getX()-well1.getX())*abs((s.h_avatar.getX()-well1.getX()))), 
+     //            2/((well1.getY()-s.h_avatar.getY())*abs(well1.getY()-s.h_avatar.getY())));
+     //  } else {
+     //    fEE.set((s.h_avatar.getX()-well1.getX())*2, (well1.getY()-s.h_avatar.getY())*2);
+     //  }
+     //}
+     
+     if(s.h_avatar.isTouchingBody(well1_1)){
+       fEE.set(0,0);
+     } else {
+       distance = (float)Math.sqrt(Math.pow(s.getToolPositionX()-well1.getX(), 2)+Math.pow(s.getToolPositionY()-well1.getY(),2));
+       //gravforce_x = ((gravityAcceleration/100)*hap_mass*mass1)/(float)Math.pow((s.h_avatar.getX()-well1.getX()), 2);
+       
+       gravforce = ((grav_const/5)*hap_mass*mass1)/((float)Math.pow(distance,2)); //
+       angle = (float)Math.acos(abs(s.getToolPositionX()-well1.getX())/distance);
+       
+       
+       //gravforce_x = ((gravityAcceleration/1000)*hap_mass*mass1)/((s.h_avatar.getX()+rEE-well1.getX()) * abs(s.h_avatar.getX()+rEE-well1.getX()));
+       direction_x = Math.signum(s.getToolPositionX()-well1.getX());
+       direction_y = Math.signum(well1.getY()-s.getToolPositionY());
+       print("angle: "+angle);
+       
+       gravforce_x = direction_x*gravforce*(float)Math.cos(angle);
+       gravforce_y = direction_y*gravforce*(float)Math.sin(angle);
+       
+       //gravforce_y = ((gravityAcceleration/1000)*hap_mass*mass1)/(direction_y*(gravforce*(float)Math.sin(angle)));
+       //gravforce_y = ((gravityAcceleration/1000)*hap_mass*mass1)/((well1.getY()+rEE-s.h_avatar.getY()) * abs(well1.getY()+rEE-s.h_avatar.getY()));
+       gravforce_x = constrain(gravforce_x, -5, 5);
+       gravforce_y = constrain(gravforce_y, -5, 5);
+            
+  
+         
+       //print("x:"+gravforce_x+" y:"+gravforce_y);
+         
+       fEE.set(gravforce_x, gravforce_y);
      }
      
-     //Force for Well 2 (Top well) - Magnitude *2.5
-     if(abs(s.h_avatar.getX()-well2.getX())< 3 && abs(s.h_avatar.getY()-(well2.getY())) < 3){
-        if(abs(s.h_avatar.getX()-well2.getX()) > 0.5 && abs(s.h_avatar.getY()-(well2.getY())) > 0.5){
-          fEE.set(2.5/((s.h_avatar.getX()-well2.getX())*abs((s.h_avatar.getX()-well2.getX()))), 
-                 2.5/((well2.getY()-s.h_avatar.getY())*abs(well2.getY()-s.h_avatar.getY())));
-        } else {
-          fEE.set((s.h_avatar.getX()-well2.getX())*2.5, (well2.getY()-s.h_avatar.getY())*2.5);
-        }
-     }  
+    // //Force for Well 2 (Top well) - Magnitude *2.5
+    // if(abs(s.h_avatar.getX()-well2.getX())< 3 && abs(s.h_avatar.getY()-(well2.getY())) < 3){
+    //    if(abs(s.h_avatar.getX()-well2.getX()) > 0.5 && abs(s.h_avatar.getY()-(well2.getY())) > 0.5){
+    //      fEE.set(2.5/((s.h_avatar.getX()-well2.getX())*abs((s.h_avatar.getX()-well2.getX()))), 
+    //             2.5/((well2.getY()-s.h_avatar.getY())*abs(well2.getY()-s.h_avatar.getY())));
+    //    } else {
+    //      fEE.set((s.h_avatar.getX()-well2.getX())*2.5, (well2.getY()-s.h_avatar.getY())*2.5);
+    //    }
+    // }  
    
  
-     //Force for well 3 (Bottom well) 
-    if(abs(s.h_avatar.getX()-well3.getX())< 1 && abs(s.h_avatar.getY()-(well3.getY())) < 1){
-       //The if-else statement is to prevent the shaking caused when the distance between the end effector 
-       //and the well center is too small, causing it to approach infinity. 
-       if(abs(s.h_avatar.getX()-well3.getX()) > 0.5 && abs(s.h_avatar.getY()-(well3.getY())) > 0.5){
-          fEE.set(1/((s.h_avatar.getX()-well3.getX())*abs((s.h_avatar.getX()-well3.getX()))), 
-                 1/((well3.getY()-s.h_avatar.getY())*abs(well3.getY()-s.h_avatar.getY())));
-        } else {
-          //When they are too close (within 0.5), this executes instead to prevent shaking. 
-          fEE.set((s.h_avatar.getX()-well3.getX())*2, (well3.getY()-s.h_avatar.getY())*2);  
-        }
-    }
+    // //Force for well 3 (Bottom well) 
+    //if(abs(s.h_avatar.getX()-well3.getX())< 1 && abs(s.h_avatar.getY()-(well3.getY())) < 1){
+    //   //The if-else statement is to prevent the shaking caused when the distance between the end effector 
+    //   //and the well center is too small, causing it to approach infinity. 
+    //   if(abs(s.h_avatar.getX()-well3.getX()) > 0.5 && abs(s.h_avatar.getY()-(well3.getY())) > 0.5){
+    //      fEE.set(1/((s.h_avatar.getX()-well3.getX())*abs((s.h_avatar.getX()-well3.getX()))), 
+    //             1/((well3.getY()-s.h_avatar.getY())*abs(well3.getY()-s.h_avatar.getY())));
+    //    } else {
+    //      //When they are too close (within 0.5), this executes instead to prevent shaking. 
+    //      fEE.set((s.h_avatar.getX()-well3.getX())*2, (well3.getY()-s.h_avatar.getY())*2);  
+    //    }
+    //}
      
     torques.set(widgetOne.set_device_torques(fEE.array()));
     widgetOne.device_write_torques();
