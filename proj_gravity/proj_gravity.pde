@@ -375,8 +375,10 @@ void createWell(FCircle inner_well, FCircle outer_well, float size, float pos_x,
 void arrow(float x1, float y1, float x2, float y2){
   x2=x2*0.5;
   y2=y2*0.5;
-  x1=-x1+(12.5*40);
-  y1=y1-(5*40)-60;
+  //x1=-x1+(12.5*40);
+  x1 = -x1+(worldWidth/2*pixelsPerCentimeter);
+  //y1=y1-(5*40)-60;
+  y1=y1-(worldHeight/2*pixelsPerCentimeter)-(pixelsPerCentimeter*1.5);
   y2=y2+y1;
   x2=-x2+x1;
 
