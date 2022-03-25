@@ -1,23 +1,31 @@
 import controlP5.*;
 import co.haply.hphysics.*;
 import processing.core.*;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 
 public class GUI{
 
     private PApplet currentApp;
     private ControlP5 ui;
     private Knob plateVelocity, ballVelocity, plateM, ballM;
-    private PFont titleFont, contentFont;
+    private Button startButton, toggleHaptics, resetSensor;
+    private PFont titleFont, contentFont, LevelTitleFont, questionsFont;
+    public Slider Impact_Slider;
+    private Textlabel SliderLabel, menuTitle, menuDesc;
 
     private FWorld world;
+    private HVirtualCoupling hapticSensor;
     private FBox topBoundary, bottomBoundary, leftBoundary, rightBoundary, controlBackground, controlTop;
     private FBox menuRight, menuBottom;
 
     private float WORLD_WIDTH, WORLD_HEIGHT, BOUNDARY_SIZE;
     int currentLevel = 0;
-    boolean isStart;
+    boolean isStart, isReset, isHapticsOn;
+
+
+    Q1 questions = new Q1();
+
 
     public GUI(final processing.core.PApplet applet){
         currentApp = applet;
@@ -33,19 +41,23 @@ public class GUI{
         // initBackground(w_width, w_height, b_size);
         initControls();
         welcome();
+        // allCollissions();
+        // initCollisions();
     }
 
     public void initControls(){
         titleFont = currentApp.createFont("Arial Bold",50f);
         contentFont = currentApp.createFont("Arial", 20f);
+        LevelTitleFont = currentApp.createFont("Arial Bold", 30f);
+        questionsFont = currentApp.createFont("Arial", 15f);
 
-        plateVelocity =  ui.addKnob("Plate Speed")
-                      .setRange(0,500)
-                      .setValue(0)
-                      .setPosition(100, 570)
-                      .setRadius(50)
-                      .setDragDirection(Knob.VERTICAL)
-                      .hide();
+        plateVelocity = ui.addKnob("Plate Speed")
+                            .setRange(0,500)
+                            .setValue(0)
+                            .setPosition(100, 570)
+                            .setRadius(50)
+                            .setDragDirection(Knob.VERTICAL)
+                            .hide();
   
         plateM =  ui.addKnob("Plate Mass")
                             .setRange(1,10)
@@ -70,6 +82,62 @@ public class GUI{
                             .setRadius(50)
                             .setDragDirection(Knob.VERTICAL)
                             .hide();   
+                            
+        Impact_Slider = ui.addSlider("Impact Force Slider")
+                             .setPosition(700,40)
+                             .setSize(30,150)
+                             .setRange(0,100)
+                             .setValue(0)
+                             .setColorValue(0x00000050)
+                             .hide(); 
+                             
+        SliderLabel = ui.addTextlabel("Impact Force (%)")
+                    .setText("Impact Force (%)")
+                    .setPosition(630,205)
+                     .setFont(contentFont)
+                    .setColorValue(0x00000050)
+                    .hide()
+                    ;  
+
+        startButton = ui.addButton("Start")
+                            .setValue(0)
+                            .setPosition( 1030, 600)
+                            .setSize(100,50)
+                            .onRelease(nextCallback);
+
+        toggleHaptics = ui.addButton("tHaply")
+                            .setPosition( 1030, 530)
+                            .setSize(100,50)
+                            .setSwitch(true)
+                            .setLabel("Haply OFF")
+                            .onRelease(toggleHapticsCallback)
+                            .hide();
+
+        resetSensor = ui.addButton("rSensor")
+                            .setPosition( 870, 530)
+                            .setSize(100,50)
+                            .setLabel("Reset Sensor")
+                            .onRelease(resetCallback)
+                            .hide();                         
+
+        ui.addListener(radioListener);
+
+        menuTitle =  ui.addTextlabel("LevelTitle")
+                        .setText("")
+                        .setSize(300, 50)
+                        .setPosition(850, 20)
+                        .setFont(LevelTitleFont)
+                        .setColorValue(0x00000000)
+                        .hide();
+
+        menuDesc =  ui.addTextlabel("LevelDesc")
+                        .setMultiline(true)
+                        .setText("")
+                        .setSize(350, 100)
+                        .setPosition(850, 100)
+                        .setFont(questionsFont)
+                        .setColorValue(0x00000060)
+                        .hide();
 
     }
 
@@ -91,6 +159,7 @@ public class GUI{
         leftBoundary.setPosition(BOUNDARY_SIZE/2, WORLD_HEIGHT/2);
         leftBoundary.setFill(10);
         leftBoundary.setStaticBody(true);
+        leftBoundary.setName("Boundary Left");
 
         bottomBoundary = new FBox(WORLD_WIDTH + 80, BOUNDARY_SIZE);
         bottomBoundary.setPosition(WORLD_WIDTH/2, WORLD_HEIGHT - BOUNDARY_SIZE/2);
@@ -106,11 +175,13 @@ public class GUI{
         menuRight.setPosition(WORLD_WIDTH + BOUNDARY_SIZE/2, WORLD_HEIGHT/2);
         menuRight.setFill(10);
         menuRight.setStaticBody(true);
+        menuRight.setName("Boundary Right");
 
         controlTop = new FBox(WORLD_WIDTH,BOUNDARY_SIZE);
         controlTop.setPosition(WORLD_WIDTH/2, WORLD_HEIGHT - (BOUNDARY_SIZE/2 + 15));
         controlTop.setFill(10);
         controlTop.setStaticBody(true);
+        controlTop.setName("Boundary Bottom");
 
         world.add(topBoundary);
         world.add(bottomBoundary);        
@@ -119,19 +190,11 @@ public class GUI{
 
         world.setGravity(0,0);
         world.setGrabbable(false);
+        // world.setEdgesRestitution(.4f);
     }
 
     public void welcome(){
-        // for(String font: PFont.list()){
-        //     System.out.println(font);
-        // }
-
-        ui.addButton("Start")
-            .setValue(0)
-            .setPosition( 1050, 600)
-            .setSize(100,50)
-            .onRelease(nextCallback);
-
+     
         ui.addTextlabel("Wel")
             .setText("WELCOME")
             .setPosition(450, 100)
@@ -146,6 +209,8 @@ public class GUI{
             .setPosition(200, 200)
             .setFont(contentFont)
             .setColorValue(0x00000050);
+
+        startButton.show();
 
     }
 
@@ -165,27 +230,141 @@ public class GUI{
         ballVelocity.show();
         plateM.show();
         ballM.show();
+
+        toggleHaptics.show();
+        resetSensor.show();
+    }
+    
+     public void initElasticCollisions(){
+        initBackground();
+        ballVelocity.show();
+        plateM.show();
+        ballM.show();
+        Impact_Slider.show();
+        SliderLabel.show();
+        menuTitle.setText("Elastic Collisions").show();
+        menuDesc.setText("Brief Description about Elastic Collisions").show();
+        
+    }
+    
+     public void initInelasticCollisions(){
+        initBackground();
+        ballVelocity.show();
+        plateM.show();
+        ballM.show();
+        Impact_Slider.show();
+        SliderLabel.show();
+        menuTitle.setText("Inelastic Collisions").show();
+        menuDesc.setText("Brief Description about Inelastic Collisions").show();
+
+    }
+    
+     public void initGravity(){
+        initBackground();
+        ballM.show();
+        menuTitle.setText("Gravitational Forces").show();
+        menuDesc.setText("Brief Description about Gravitational Forces").show();
     }
 
 
+    public void initAllCollisions(){
+        initBackground();
+        // startButton.setLock(true);
 
-    
+        ui.addTextlabel("LevelTitle")
+            .setText("Elastic and Inelastic \nCollisions")
+            .setSize(300, 50)
+            .setPosition(850, 20)
+            .setFont(LevelTitleFont)
+            .setColorValue(0x00000000);
+
+            
+            int posX = 850;
+            int posY = 100;   
+
+
+            for(int i = 0; i < questions.getQuestions().size() ; i++){
+                addQuestion(
+                    questions.getQuestions().get(i)[0], 
+                    questions.getQuestions().get(i)[1], 
+                    posX, 
+                    posY + i*50,
+                    Arrays.copyOfRange(questions.getQuestions().get(i), 2, questions.getQuestions().get(i).length) 
+                );
+            }         
+            
+
+    }
+
     // Button Listeners
     private CallbackListener nextCallback = new CallbackListener(){
         public void controlEvent(CallbackEvent event) {
-            if(currentLevel == 0){
-                event.getController().setLabel("Next");
+            if(currentLevel < 4){
                 for(ControllerInterface<?>  t: ui.getAll()){
                     if(!t.getName().equals("Start")){
                         t.hide();
                     }
                 }
-            } 
-            clearWorld();
-            currentLevel++;
-            isStart = true;
+                if(currentLevel == 0){
+                    event.getController().setLabel("Next");
+                }
+
+                switchHaptics(true);
+                toggleHaptics.show();
+                resetSensor.show();
+                clearWorld();
+                currentLevel++;
+                isStart = true;
+            }
         }
     };
+
+    private CallbackListener toggleHapticsCallback = new CallbackListener(){
+        public void controlEvent(CallbackEvent event) {
+            switchHaptics(isHapticsOn);          
+        }
+    };
+
+    private CallbackListener resetCallback = new CallbackListener(){
+        public void controlEvent(CallbackEvent event) {
+            isReset = true; 
+            switchHaptics(true); 
+        }
+    };
+
+
+    // radiobutton Listeners
+    private ControlListener radioListener = new ControlListener(){
+        public void controlEvent(ControlEvent event){
+            if(event.isGroup()){
+                // switch(event.getName())
+                System.out.println(event.group().getName());
+            }
+        }
+    };
+
+
+    // questions
+    private void addQuestion(String label, String qText, int posX, int posY, String [] answers){
+        ui.addTextlabel(label)
+            .setMultiline(true)
+            .setText(qText)
+            .setSize(350, 20)
+            .setPosition(posX, posY)
+            .setFont(questionsFont)
+            .setColorValue(0x00000060);
+
+        RadioButton temp  = ui.addRadioButton(label+"Ans")
+            .setItemsPerRow(answers.length)
+            .setSpacingColumn(300/answers.length)
+            .setPosition(posX, posY + 30);
+        
+        for(int i=0; i< answers.length; i++){
+            temp.addItem(answers[i], i+1);
+        }
+        temp.setColorLabels(100);
+        
+    }
 
 
     // Setters
@@ -203,6 +382,18 @@ public class GUI{
 
     public void setBallMass(float value){
         ballM.setValue(value);
+    }
+
+    public void setIsReset(boolean rValue){
+        isReset = rValue;
+    }
+
+    public void setIsHapticsOn(boolean hValue){
+        isHapticsOn = hValue;
+    }
+
+    public void setSensor(HVirtualCoupling s){
+        hapticSensor = s;
     }
 
 
@@ -235,6 +426,14 @@ public class GUI{
         return isStart;
     }
     
+    public boolean getIsReset(){
+        return isReset;
+    }
+
+    public boolean getIsHapticsOn(){
+        return isHapticsOn;
+    }
+
     //world methods
     public void clearWorld(){
         world.clear();
@@ -247,6 +446,22 @@ public class GUI{
         world.add(leftBoundary);
         world.add(rightBoundary);
 
+    }
+
+    private void switchHaptics(boolean isOn){
+         if(isOn){ // turn off
+            toggleHaptics.setOff();
+            toggleHaptics.setLabel("Haply OFF");
+            isHapticsOn = false;
+            if(hapticSensor != null)
+                hapticSensor.h_avatar.setSensor(true);
+        }else{
+            toggleHaptics.setOn();
+            toggleHaptics.setLabel("Happly ON");
+            isHapticsOn = true;
+            if(hapticSensor != null)
+                hapticSensor.h_avatar.setSensor(false);
+        }   
     }
     
 }
