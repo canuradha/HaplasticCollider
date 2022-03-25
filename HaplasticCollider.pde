@@ -89,6 +89,9 @@ void addSensor(){
   sensor.h_avatar.setFill(255,0,0); 
   sensor.h_avatar.setSensor(true);
 
+  if(ui != null)
+    ui.setSensor(sensor);
+
   sensor.init(world, WORLD_WIDTH/2, BOUNDARY_SIZE + 5);
 }
 
@@ -172,20 +175,25 @@ void draw(){
 class SimulationThread implements Runnable{
   public void run(){
     renderingForce = true;
-
-    // if(haplyBoard.data_available()){
-    //  /* GET END-EFFECTOR STATE (TASK SPACE) */
-    //   widgetOne.device_read_data();
     
-    //   angles.set(widgetOne.get_device_angles()); 
-    //   posEE.set(widgetOne.get_device_position(angles.array()));
-    //   posEE.set(posEE.copy().mult(200));  
-    // }
+    if(haplyBoard.data_available() && sensor != null){
+     /* GET END-EFFECTOR STATE (TASK SPACE) */
+        
 
-    // if(sensor != null){
-    //   sensor.setToolPosition(WORLD_WIDTH/2 - (2.5*(posEE).x), (BOUNDARY_SIZE) + (2*(posEE).y) - 6); 
-    //   sensor.updateCouplingForce();
-    // }
+      if(ui.getIsReset()){
+        posEE.set(0,0);
+        ui.setIsReset(false);
+      }else{
+        widgetOne.device_read_data();
+    
+        angles.set(widgetOne.get_device_angles()); 
+        posEE.set(widgetOne.get_device_position(angles.array()));
+        posEE.set(posEE.copy().mult(200));
+      }
+    
+      sensor.setToolPosition(WORLD_WIDTH/2 - (2.5*posEE.x), (BOUNDARY_SIZE) + (2*posEE.y) - 6); 
+      sensor.updateCouplingForce();
+    }
     
     if(ui.getCurrentLevel() == 1){
       elasticCollisions();
@@ -197,11 +205,18 @@ class SimulationThread implements Runnable{
     
     if(sensor != null){
       sensor.h_avatar.setDamping(dampingForce);
-      fEE.set(sensor.getVirtualCouplingForceX(), sensor.getVirtualCouplingForceY());
+
+      // if(ui.getIsHapticsOn()){
+      //   fEE.set(sensor.getVirtualCouplingForceX(), sensor.getVirtualCouplingForceY());        
+      // }else{
+      //   fEE.set(0,0);
+      // }
+      // torques.set(widgetOne.set_device_torques(fEE.array()));
+      //   widgetOne.device_write_torques();
+      
     }
     
-    // torques.set(widgetOne.set_device_torques(fEE.array()));
-    // widgetOne.device_write_torques();
+    
 
     world.step();
 
