@@ -239,8 +239,8 @@ void draw(){
     
     ui.initGravity();    
     world.add(well_large);
-    world.add(well_medium);
-    world.add(well_small);
+    //world.add(well_medium);
+    //world.add(well_small);
     addSensor();
     //arrow(xE, yE, fEE.x, fEE.y);
     //line(200, 100, 600, 400);
