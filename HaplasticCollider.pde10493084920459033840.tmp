@@ -36,8 +36,6 @@ Knob plateVelocity, ballVelocity, plateM, ballM;    // to remove
 FBox basePlate;
 FCircle ball, bouncey_ball_1, bouncey_ball_2, well_large, well_medium, well_small;
 
-FLine line_;
-
 // Object parameter variables
 float platePositionX = BOUNDARY_SIZE * 5;
 float platePositionY =  WORLD_HEIGHT/2;
@@ -158,7 +156,6 @@ FCircle initWell(float radius, float pos_x, float pos_y){
   tempWell.setPosition(pos_x, pos_y);
   tempWell.setStaticBody(true);
   tempWell.setSensor(true);
-  tempWell.setFill(0);
   return tempWell;
 }
 
@@ -177,10 +174,9 @@ void setup() {
   ui.init(WORLD_WIDTH, WORLD_HEIGHT, BOUNDARY_SIZE);
   world = ui.getWorld();  
   
-  well_large = initWell(15, WORLD_WIDTH/2, WORLD_HEIGHT/2.3);
-  //well_large = initWell(15, WORLD_WIDTH/4, WORLD_HEIGHT/3.5);
-  //well_medium = initWell(10, WORLD_WIDTH/1.8, WORLD_HEIGHT/1.8);
-  //well_small = initWell(5, WORLD_WIDTH/1.2, WORLD_HEIGHT/3);
+  well_large = initWell(15, WORLD_WIDTH/4, WORLD_HEIGHT/3.5);
+  well_medium = initWell(10, WORLD_WIDTH/1.8, WORLD_HEIGHT/1.8);
+  well_small = initWell(5, WORLD_WIDTH/1.2, WORLD_HEIGHT/3);
   
   ball = initBall(2* ballRadius, WORLD_WIDTH/4, WORLD_HEIGHT/2, 0.0f, false);
   basePlate = initBox(BOUNDARY_SIZE, BOUNDARY_SIZE * 5, platePositionX, platePositionY, false);
@@ -238,18 +234,20 @@ void draw(){
     world = ui.getWorld();
     
     ui.initGravity();    
+   
+    //addSensor();
     world.add(well_large);
     world.add(well_medium);
     world.add(well_small);
     addSensor();
-    //arrow(xE, yE, fEE.x, fEE.y);
-    //line(200, 100, 600, 400);
-
+    arrow(xE, yE, fEE.x, fEE.y);
+    //arrow(posEE.x, posEE.y, fEE.x, fEE.y);
+    line(20, 20, 500, 500);
  }
     
  else if(renderingForce == false){
     background(255);
-    //arrow(xE, yE, fEE.x, fEE.y);
+    
     world.draw();
   }
 }
@@ -286,17 +284,13 @@ class SimulationThread implements Runnable{
     
     if (ui.getCurrentLevel() == 4){
       gravforce_arr1 = calcGravForces(well_large, mass_large);      
-      //gravforce_arr2 = calcGravForces(well_medium, mass_medium); 
-      //gravforce_arr3 = calcGravForces(well_small, mass_small);
+      gravforce_arr2 = calcGravForces(well_medium, mass_medium); 
+      gravforce_arr3 = calcGravForces(well_small, mass_small);
            
-      //gravforce_totx = gravforce_arr1[0]+gravforce_arr2[0]+gravforce_arr3[0];
-      //gravforce_toty = gravforce_arr1[1]+gravforce_arr2[1]+gravforce_arr3[1];
-      
-      gravforce_totx = gravforce_arr1[0];
-      gravforce_toty = gravforce_arr1[1];
-         
+      gravforce_totx = gravforce_arr1[0]+gravforce_arr2[0]+gravforce_arr3[0];
+      gravforce_toty = gravforce_arr1[1]+gravforce_arr2[1]+gravforce_arr3[1];
+           
       fEE.set(gravforce_totx, gravforce_toty);
-      
     }
         
 
@@ -561,21 +555,24 @@ public float[] calcGravForces(FBody well, float mass){
     gravforce_y = direction_y*gravforce*(float)Math.sin(angle);  //use the angle to get the y-comp of gravitational force
      
     float[] gravforce_arr = new float[]{gravforce_x, gravforce_y};
-    print("Yesssssss \n");
-    //line(200, 100, 600, 400);
+    print("Yasssssss \n");
     return gravforce_arr; 
 }
 
 void arrow(float x1, float y1, float x2, float y2){
   x2=x2*0.5;
   y2=y2*0.5;
+  //x1=-x1+(12.5*40);
+  //x1 = -x1+(WORLD_WIDTH/2*pixelsPerMeter);
   //WORLD_WIDTH = 80; WORLD_HEIGHT = 70;
   x1 = -x1+(WORLD_WIDTH/2*pixelsPerMeter);
-  y1=y1-(WORLD_HEIGHT/2*pixelsPerMeter)-1000;
-  y1=500;
+  //y1=y1-(5*40)-60;
+  y1=y1-(WORLD_HEIGHT/2*pixelsPerMeter);//-(WORLD_HEIGHT+70);
+  
   //700 AND 30
   y2=y2+y1;
   x2=-x2+x1;
+  //line(400,400, 700,700);
   line(x1, y1, x2, y2);
   pushMatrix();
   translate(x2, y2);

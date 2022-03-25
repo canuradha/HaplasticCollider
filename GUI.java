@@ -166,6 +166,26 @@ public class GUI{
         plateM.show();
         ballM.show();
     }
+    
+     public void initElasticCollisions(){
+        initBackground();
+        ballVelocity.show();
+        plateM.show();
+        ballM.show();
+    }
+    
+     public void initInelasticCollisions(){
+        initBackground();
+        ballVelocity.show();
+        plateM.show();
+        ballM.show();
+    }
+    
+     public void initGravity(){
+        initBackground();
+        ballM.show();
+    }
+
 
 
 
