@@ -9,6 +9,8 @@ public class GUI{
     private PApplet currentApp;
     private ControlP5 ui;
     private Knob plateVelocity, ballVelocity, plateM, ballM;
+    public Slider Impact_Slider;
+    private Textlabel SliderLabel;
     private PFont titleFont, contentFont;
 
     private FWorld world;
@@ -70,6 +72,22 @@ public class GUI{
                             .setRadius(50)
                             .setDragDirection(Knob.VERTICAL)
                             .hide();   
+                            
+        Impact_Slider = ui.addSlider("Impact Force Slider")
+                             .setPosition(700,40)
+                             .setSize(30,150)
+                             .setRange(0,100)
+                             .setValue(0)
+                             .setColorValue(0x00000050)
+                             .hide(); 
+                             
+        SliderLabel = ui.addTextlabel("Impact Force (%)")
+                    .setText("Impact Force (%)")
+                    .setPosition(630,205)
+                     .setFont(contentFont)
+                    .setColorValue(0x00000050)
+                    .hide()
+                    ;  
 
     }
 
@@ -166,6 +184,30 @@ public class GUI{
         plateM.show();
         ballM.show();
     }
+    
+     public void initElasticCollisions(){
+        initBackground();
+        ballVelocity.show();
+        plateM.show();
+        ballM.show();
+        Impact_Slider.show();
+        SliderLabel.show();
+    }
+    
+     public void initInelasticCollisions(){
+        initBackground();
+        ballVelocity.show();
+        plateM.show();
+        ballM.show();
+        Impact_Slider.show();
+        SliderLabel.show();
+    }
+    
+     public void initGravity(){
+        initBackground();
+        ballM.show();
+    }
+
 
 
 
@@ -175,12 +217,13 @@ public class GUI{
         public void controlEvent(CallbackEvent event) {
             if(currentLevel == 0){
                 event.getController().setLabel("Next");
-                for(ControllerInterface<?>  t: ui.getAll()){
+               
+            } 
+             for(ControllerInterface<?>  t: ui.getAll()){
                     if(!t.getName().equals("Start")){
                         t.hide();
                     }
                 }
-            } 
             clearWorld();
             currentLevel++;
             isStart = true;
