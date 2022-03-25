@@ -83,9 +83,6 @@ HVirtualCoupling  s;
 FCircle well1; 
 FCircle well2;
 FCircle well3;
-FCircle well1_1;
-FCircle well2_2; 
-FCircle well3_3;
 
 /* text font */
 PFont             f;
@@ -175,13 +172,6 @@ void setup(){
   well1.setFill(0);
   world.add(well1);
   
-  well1_1 = new FCircle(3.0);
-  well1_1.setPosition(edgeTopLeftX+worldWidth/2.0, edgeTopLeftY+worldHeight/2.0+0.5);
-  well1_1.setStaticBody(true);
-  well1_1.setSensor(true);
-  well1_1.setFill(0,200,0);
-  world.add(well1_1);
-  
   well2 = new FCircle(3.0);
   well2.setPosition(edgeTopLeftX+worldWidth/4.0, edgeTopLeftY+worldHeight/3.0-1);
   well2.setStaticBody(true);
@@ -189,31 +179,13 @@ void setup(){
   well2.setFill(0);
   world.add(well2);
   
-  well2_2 = new FCircle(4.0);
-  well2_2.setPosition(edgeTopLeftX+worldWidth/4.0, edgeTopLeftY+worldHeight/3.0-1);
-  well2_2.setStaticBody(true);
-  well2_2.setSensor(true);
-  well2_2.setFill(0);
-  world.add(well2_2);
-  
   well3 = new FCircle(1.0);
   well3.setPosition(edgeTopLeftX+worldWidth/4.0*3, edgeTopLeftY+worldHeight/3.0*2+1);
   well3.setStaticBody(true);
   well3.setSensor(true);
   well3.setFill(0);
   world.add(well3);
-  
-  well3_3 = new FCircle(2.0);
-  well3_3.setPosition(edgeTopLeftX+worldWidth/4.0*3, edgeTopLeftY+worldHeight/3.0*2+1);
-  well3_3.setStaticBody(true);
-  well3_3.setSensor(true);
-  well3_3.setFill(0);
-  world.add(well3_3);
-  
-  //createWell(well1, well1_1, 2, edgeTopLeftX+worldWidth/2.0, edgeTopLeftY+worldHeight/2.0+1);
-  //createWell(well2, well2_2, 3, edgeTopLeftX+worldWidth/4.0, edgeTopLeftY+worldHeight/3.0-1);
-  //createWell(well3, well3_3, 1, edgeTopLeftX+worldWidth/4.0*3, edgeTopLeftY+worldHeight/3.0*2+1);
-  
+ 
   /* Setup the Virtual Coupling Contact Rendering Technique */
   s                   = new HVirtualCoupling((0.75)); 
   s.h_avatar.setDensity(4); 
@@ -255,8 +227,8 @@ void draw(){
     
     //translate(xE, yE);
 
-    arrow(xE, yE-worldHeight, fEE.x, fEE.y);
-
+    //arrow(xE, yE-worldHeight, fEE.x, fEE.y);
+    arrow(xE, yE, fEE.x, fEE.y);
     world.draw();
   }
 }
@@ -290,38 +262,18 @@ class SimulationThread implements Runnable{
  
     fEE.set(-s.getVirtualCouplingForceX(), s.getVirtualCouplingForceY());
     fEE.div(100000); //dynes to newtons
+
+    //Call gravitational force for each well
+    gravforce_arr1 = calcGravForces(well1, mass1);       
+    gravforce_arr2 = calcGravForces(well2, mass2); 
+    gravforce_arr3 = calcGravForces(well3, mass3);
     
-    //Moving well1 from side to side in a cycle
-  /*  if(well1.getX() < 20 && direction == false){
-      well1.setPosition(well1.getX()+0.002, well1.getY());
-    } else if(well1.getX()<20 && direction == true){
-      well1.setPosition(well1.getX()-0.002, well1.getY());
-    } 
-    if(well1.getX() < 5){
-      well1.setPosition(well1.getX()+0.002, well1.getY());
-      direction = false;
-    }
-    if(well1.getX() > 20){
-      well1.setPosition(well1.getX()-0.002, well1.getY());
-      direction = true;
-    } */
-      
-     //if(s.h_avatar.isTouchingBody(well1_1)){
-     //  fEE.set(0,0);
-     //} else {
-       gravforce_arr1 = calcGravForces(well1, mass1);       
-       gravforce_arr2 = calcGravForces(well2, mass2); 
-       gravforce_arr3 = calcGravForces(well3, mass3);
+    //Sum the forces
+    gravforce_totx = gravforce_arr1[0]+gravforce_arr2[0]+gravforce_arr3[0];
+    gravforce_toty = gravforce_arr1[1]+gravforce_arr2[1]+gravforce_arr3[1];
        
-       gravforce_totx = gravforce_arr1[0]+gravforce_arr2[0]+gravforce_arr3[0];
-       gravforce_toty = gravforce_arr1[1]+gravforce_arr2[1]+gravforce_arr3[1];
-       
-       //gravforce_totx = constrain(gravforce_totx, -5, 5);    //limit the min and max of force to prevent the haply from getting out of control
-       //gravforce_toty = constrain(gravforce_toty, -5, 5);
-                 
-       fEE.set(gravforce_totx, gravforce_toty);  //apply the gravitational force to the end effector
-     //}
-     
+    fEE.set(gravforce_totx, gravforce_toty);  //apply the gravitational force to the end effector
+
     torques.set(widgetOne.set_device_torques(fEE.array()));
     widgetOne.device_write_torques();
    
@@ -350,26 +302,14 @@ public float[] calcGravForces(FBody well, float mass){
     float[] gravforce_arr = new float[]{gravforce_x, gravforce_y};
     
     return gravforce_arr; 
-    //gravforce_x = constrain(gravforce_x, -5, 5);    //limit the min and max of force to prevent the haply from getting out of control
-    //gravforce_y = constrain(gravforce_y, -5, 5);
-                 
-    //fEE.set(gravforce_x, gravforce_y);  //apply the gravitational force to the end effector
 }
 
-void createWell(FCircle inner_well, FCircle outer_well, float size, float pos_x, float pos_y){
-  inner_well = new FCircle(size);
-  inner_well.setPosition(pos_x, pos_y); 
-  inner_well.setStaticBody(true);
-  inner_well.setSensor(false); 
-  //inner_well.setFill(0); 
-  world.add(inner_well);
-  
-  //outer_well = new FCircle(size+1.5);
-  //outer_well.setPosition(pos_x, pos_y);
-  //outer_well.setStaticBody(true);
-  //outer_well.setSensor(false);
-  ////outer_well.setFill(0);
-  //world.add(outer_well);
+FCircle initWell(float radius, float pos_x, float pos_y){
+  FCircle tempWell = new FCircle(radius);
+  tempWell.setPosition(pos_x, pos_y);
+  tempWell.setStaticBody(true);
+  tempWell.setSensor(true);
+  return tempWell;
 }
 
 void arrow(float x1, float y1, float x2, float y2){
@@ -378,7 +318,7 @@ void arrow(float x1, float y1, float x2, float y2){
   //x1=-x1+(12.5*40);
   x1 = -x1+(worldWidth/2*pixelsPerCentimeter);
   //y1=y1-(5*40)-60;
-  y1=y1-(worldHeight/2*pixelsPerCentimeter)-(pixelsPerCentimeter*1.5);
+  y1=y1-(worldHeight/2*pixelsPerCentimeter)-(worldHeight+70);
   y2=y2+y1;
   x2=-x2+x1;
 
