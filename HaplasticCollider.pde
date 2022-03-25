@@ -63,10 +63,10 @@ byte widgetOneID = 5;
 int CW = 0;
 int CCW = 1;
 
-float dampingForce = 0;
+float dampingForce = 50;
 float virtualCouplingX = 0;
 float virtualCouplingY = 0;
-float dampingScale = 10000;
+float dampingScale = 100000;
 
 void initHaply(){
   // println(Serial.list()[0]);
@@ -85,9 +85,9 @@ void initHaply(){
 void addSensor(){
    /* Setup the Virtual Coupling Contact Rendering Technique */
   sensor = new HVirtualCoupling((3)); 
-  sensor.h_avatar.setDensity(50); 
+  sensor.h_avatar.setDensity(400); 
   sensor.h_avatar.setFill(255,0,0); 
-  sensor.h_avatar.setSensor(true);
+  // sensor.h_avatar.setSensor(true);
 
   if(ui != null)
     ui.setSensor(sensor);
@@ -95,9 +95,6 @@ void addSensor(){
   sensor.init(world, WORLD_WIDTH/2, BOUNDARY_SIZE + 5);
 }
 
-void removeSensor(){
-  sensor = null;
-}
 
 FCircle initBall(float radius, float x, float y, float ballFriction, boolean isHaptic){
   FCircle tempBall = new FCircle(2 * ballRadius);
@@ -164,7 +161,7 @@ void draw(){
     world.add(ball);
     world.add(basePlate);
 
-    // addSensor();
+    addSensor();
   }else if(renderingForce == false){
     background(255);
     
@@ -182,16 +179,18 @@ class SimulationThread implements Runnable{
 
       if(ui.getIsReset()){
         posEE.set(0,0);
+        widgetOne.device_set_parameters();
         ui.setIsReset(false);
       }else{
         widgetOne.device_read_data();
     
         angles.set(widgetOne.get_device_angles()); 
         posEE.set(widgetOne.get_device_position(angles.array()));
-        posEE.set(posEE.copy().mult(200));
       }
+
+      posEE.set(posEE.copy().mult(200));
     
-      sensor.setToolPosition(WORLD_WIDTH/2 - (2.5*posEE.x), (BOUNDARY_SIZE) + (2*posEE.y) - 6); 
+      sensor.setToolPosition(WORLD_WIDTH/2 - (2.5*posEE.x), (BOUNDARY_SIZE) + (2*posEE.y) - 7); 
       sensor.updateCouplingForce();
     }
     
@@ -206,18 +205,17 @@ class SimulationThread implements Runnable{
     if(sensor != null){
       sensor.h_avatar.setDamping(dampingForce);
 
-      // if(ui.getIsHapticsOn()){
-      //   fEE.set(sensor.getVirtualCouplingForceX(), sensor.getVirtualCouplingForceY());        
-      // }else{
-      //   fEE.set(0,0);
-      // }
-      // torques.set(widgetOne.set_device_torques(fEE.array()));
-      //   widgetOne.device_write_torques();
+      if(ui.getIsHapticsOn()){
+        fEE.set(-sensor.getVirtualCouplingForceX(), sensor.getVirtualCouplingForceY());        
+      }else{
+        fEE.set(0,0);
+      }
+      fEE.div(dampingScale);
+      torques.set(widgetOne.set_device_torques(fEE.array()));
+      widgetOne.device_write_torques();
       
     }
     
-    
-
     world.step();
 
     renderingForce = false;

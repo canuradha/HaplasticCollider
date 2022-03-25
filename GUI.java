@@ -152,6 +152,7 @@ public class GUI{
 
         world.setGravity(0,0);
         world.setGrabbable(false);
+        // world.setEdgesRestitution(.4f);
     }
 
     public void welcome(){
@@ -382,13 +383,13 @@ public class GUI{
             toggleHaptics.setLabel("Haply OFF");
             isHapticsOn = false;
             if(hapticSensor != null)
-                hapticSensor.h_avatar.setSensor(false);
+                hapticSensor.h_avatar.setSensor(true);
         }else{
             toggleHaptics.setOn();
             toggleHaptics.setLabel("Happly ON");
             isHapticsOn = true;
             if(hapticSensor != null)
-                hapticSensor.h_avatar.setSensor(true);
+                hapticSensor.h_avatar.setSensor(false);
         }   
     }
     
