@@ -11,6 +11,8 @@ public class GUI{
     private Knob plateVelocity, ballVelocity, plateM, ballM;
     private Button startButton, toggleHaptics, resetSensor;
     private PFont titleFont, contentFont, LevelTitleFont, questionsFont;
+    public Slider Impact_Slider;
+    private Textlabel SliderLabel, menuTitle, menuDesc;
 
     private FWorld world;
     private HVirtualCoupling hapticSensor;
@@ -80,6 +82,22 @@ public class GUI{
                             .setRadius(50)
                             .setDragDirection(Knob.VERTICAL)
                             .hide();   
+                            
+        Impact_Slider = ui.addSlider("Impact Force Slider")
+                             .setPosition(700,40)
+                             .setSize(30,150)
+                             .setRange(0,100)
+                             .setValue(0)
+                             .setColorValue(0x00000050)
+                             .hide(); 
+                             
+        SliderLabel = ui.addTextlabel("Impact Force (%)")
+                    .setText("Impact Force (%)")
+                    .setPosition(630,205)
+                     .setFont(contentFont)
+                    .setColorValue(0x00000050)
+                    .hide()
+                    ;  
 
         startButton = ui.addButton("Start")
                             .setValue(0)
@@ -104,6 +122,23 @@ public class GUI{
 
         ui.addListener(radioListener);
 
+        menuTitle =  ui.addTextlabel("LevelTitle")
+                        .setText("")
+                        .setSize(300, 50)
+                        .setPosition(850, 20)
+                        .setFont(LevelTitleFont)
+                        .setColorValue(0x00000000)
+                        .hide();
+
+        menuDesc =  ui.addTextlabel("LevelDesc")
+                        .setMultiline(true)
+                        .setText("")
+                        .setSize(350, 100)
+                        .setPosition(850, 100)
+                        .setFont(questionsFont)
+                        .setColorValue(0x00000060)
+                        .hide();
+
     }
 
     public void initWorldBoundary(){
@@ -124,6 +159,7 @@ public class GUI{
         leftBoundary.setPosition(BOUNDARY_SIZE/2, WORLD_HEIGHT/2);
         leftBoundary.setFill(10);
         leftBoundary.setStaticBody(true);
+        leftBoundary.setName("Boundary Left");
 
         bottomBoundary = new FBox(WORLD_WIDTH + 80, BOUNDARY_SIZE);
         bottomBoundary.setPosition(WORLD_WIDTH/2, WORLD_HEIGHT - BOUNDARY_SIZE/2);
@@ -139,11 +175,13 @@ public class GUI{
         menuRight.setPosition(WORLD_WIDTH + BOUNDARY_SIZE/2, WORLD_HEIGHT/2);
         menuRight.setFill(10);
         menuRight.setStaticBody(true);
+        menuRight.setName("Boundary Right");
 
         controlTop = new FBox(WORLD_WIDTH,BOUNDARY_SIZE);
         controlTop.setPosition(WORLD_WIDTH/2, WORLD_HEIGHT - (BOUNDARY_SIZE/2 + 15));
         controlTop.setFill(10);
         controlTop.setStaticBody(true);
+        controlTop.setName("Boundary Bottom");
 
         world.add(topBoundary);
         world.add(bottomBoundary);        
@@ -196,15 +234,42 @@ public class GUI{
         toggleHaptics.show();
         resetSensor.show();
     }
-
-    public void allCollissions(){
+    
+     public void initElasticCollisions(){
         initBackground();
-        ui.addButton("Next")
-            .setValue(0)
-            .setPosition( 1050, 600)
-            .setSize(100,50)
-            .onRelease(nextCallback)
-            .setLock(true);
+        ballVelocity.show();
+        plateM.show();
+        ballM.show();
+        Impact_Slider.show();
+        SliderLabel.show();
+        menuTitle.setText("Elastic Collisions").show();
+        menuDesc.setText("Brief Description about Elastic Collisions").show();
+        
+    }
+    
+     public void initInelasticCollisions(){
+        initBackground();
+        ballVelocity.show();
+        plateM.show();
+        ballM.show();
+        Impact_Slider.show();
+        SliderLabel.show();
+        menuTitle.setText("Inelastic Collisions").show();
+        menuDesc.setText("Brief Description about Inelastic Collisions").show();
+
+    }
+    
+     public void initGravity(){
+        initBackground();
+        ballM.show();
+        menuTitle.setText("Gravitational Forces").show();
+        menuDesc.setText("Brief Description about Gravitational Forces").show();
+    }
+
+
+    public void initAllCollisions(){
+        initBackground();
+        // startButton.setLock(true);
 
         ui.addTextlabel("LevelTitle")
             .setText("Elastic and Inelastic \nCollisions")
@@ -234,17 +299,23 @@ public class GUI{
     // Button Listeners
     private CallbackListener nextCallback = new CallbackListener(){
         public void controlEvent(CallbackEvent event) {
-            if(currentLevel == 0){
-                event.getController().setLabel("Next");
-            }
-            for(ControllerInterface<?>  t: ui.getAll()){
-                if(!t.getName().equals("Start")){
-                    t.hide();
+            if(currentLevel < 4){
+                for(ControllerInterface<?>  t: ui.getAll()){
+                    if(!t.getName().equals("Start")){
+                        t.hide();
+                    }
                 }
+                if(currentLevel == 0){
+                    event.getController().setLabel("Next");
+                }
+
+                switchHaptics(true);
+                toggleHaptics.show();
+                resetSensor.show();
+                clearWorld();
+                currentLevel++;
+                isStart = true;
             }
-            clearWorld();
-            currentLevel++;
-            isStart = true;
         }
     };
 
