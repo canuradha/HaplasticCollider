@@ -69,6 +69,7 @@ float virtualCouplingY = 0;
 float dampingScale = 100000;
 
 //Gravity well variable declarations
+float xE, yE = 0; 
 float grav_const = 6.7;
 
 float hap_mass = 8;
@@ -216,10 +217,10 @@ void setup() {
  
  //Initialization of Grav wells for module 3
   
-  well_large = initWell(15, WORLD_WIDTH/4, WORLD_HEIGHT/3.5);
-  well_medium = initWell(10, WORLD_WIDTH/1.8, WORLD_HEIGHT/1.8);
-  well_small = initWell(5, WORLD_WIDTH/1.2, WORLD_HEIGHT/3);
-
+ well_large = initWell(15, WORLD_WIDTH/2, WORLD_HEIGHT/2.3);
+  //well_large = initWell(15, WORLD_WIDTH/4, WORLD_HEIGHT/3.5);
+  //well_medium = initWell(10, WORLD_WIDTH/1.8, WORLD_HEIGHT/1.8);
+  //well_small = initWell(5, WORLD_WIDTH/1.2, WORLD_HEIGHT/3);
 
   /* Haply Board Setup */
   initHaply();  
@@ -267,8 +268,10 @@ void draw(){
         ui.initGravity();   
         addSensor();
         world.add(well_large);
-        world.add(well_medium);
-        world.add(well_small);
+        // world.add(well_medium);
+        // world.add(well_small);
+        //arrow(xE, yE, fEE.x, fEE.y);
+        //line(200, 100, 600, 400);
         break;
 
       case 4:
@@ -306,6 +309,8 @@ class SimulationThread implements Runnable{
       }
 
       posEE.set(posEE.copy().mult(200));
+      xE = pixelsPerMeter*posEE.x;
+      yE = pixelsPerMeter*posEE.y;
     
       sensor.setToolPosition(WORLD_WIDTH/2 - (2.5*posEE.x), (BOUNDARY_SIZE) + (2*posEE.y) - 7); 
       sensor.updateCouplingForce();
@@ -479,11 +484,14 @@ void contactStarted(FContact c){ //Called on contact between any 2 objects
     }else if (ui.getCurrentLevel() == 3){
 
       gravforce_arr1 = calcGravForces(well_large, mass_large);      
-      gravforce_arr2 = calcGravForces(well_medium, mass_medium); 
-      gravforce_arr3 = calcGravForces(well_small, mass_small);
+      // gravforce_arr2 = calcGravForces(well_medium, mass_medium); 
+      // gravforce_arr3 = calcGravForces(well_small, mass_small);
       
-      gravforce_totx = gravforce_arr1[0]+gravforce_arr2[0]+gravforce_arr3[0];
-      gravforce_toty = gravforce_arr1[1]+gravforce_arr2[1]+gravforce_arr3[1];
+      // gravforce_totx = gravforce_arr1[0]+gravforce_arr2[0]+gravforce_arr3[0];
+      // gravforce_toty = gravforce_arr1[1]+gravforce_arr2[1]+gravforce_arr3[1];
+
+      gravforce_totx = gravforce_arr1[0];
+      gravforce_toty = gravforce_arr1[1];
       
       fEE.set(gravforce_totx, gravforce_toty);
       
@@ -605,9 +613,9 @@ void commit_inelastic_results (FContact c, FBody body1, FBody body2, float KE_lo
 
 
 public float[] calcGravForces(FBody well, float mass){
-    distance = (float)Math.sqrt(Math.pow(sensor.getToolPositionX()-well.getX(), 2)+Math.pow(sensor.getToolPositionY()-well.getY(),2));  //calculate distance between the two bodies
+    distance = (float)Math.sqrt(Math.pow(sensor.getToolPositionX()-well.getX(), 2)+Math.pow(sensor.getAvatarPositionY()-well.getY(),2));  //calculate distance between the two bodies
     gravforce = ((grav_const)*hap_mass*mass)/((float)Math.pow(distance,2));   //calculate gravitational force according to the universal gravitation equation        
-    print("Test \n");
+    
     angle = (float)Math.acos(abs(sensor.getToolPositionX()-well.getX())/distance);  //use inverse cos to find the angle 
     
     direction_x = Math.signum(sensor.getToolPositionX()-well.getX());  //get the direction that the x-force should be applied
@@ -617,7 +625,7 @@ public float[] calcGravForces(FBody well, float mass){
     gravforce_y = direction_y*gravforce*(float)Math.sin(angle);  //use the angle to get the y-comp of gravitational force
      
     float[] gravforce_arr = new float[]{gravforce_x, gravforce_y};
-  
+    print("Yesssssss \n");  
     //line(200, 100, 600, 400);
     return gravforce_arr; 
 }
