@@ -10,6 +10,10 @@ private final ScheduledExecutorService scheduler = Executors.newScheduledThreadP
 
 float pixelsPerMeter = 10.0;
 
+PImage asteroid;
+PImage gravwell_s;
+PImage gravwell_m;
+PImage gravwell_l;
 
 
 // Haply Initializatons
@@ -63,12 +67,13 @@ byte widgetOneID = 5;
 int CW = 0;
 int CCW = 1;
 
-float dampingForce = 0;
+float dampingForce = 50;
 float virtualCouplingX = 0;
 float virtualCouplingY = 0;
-float dampingScale = 10000;
+float dampingScale = 100000;
 
 //Gravity well variable declarations
+float xE, yE = 0; 
 float grav_const = 6.7;
 
 float hap_mass = 8;
@@ -145,16 +150,16 @@ void initHaply(){
 void addSensor(){
    /* Setup the Virtual Coupling Contact Rendering Technique */
   sensor = new HVirtualCoupling((3)); 
-  sensor.h_avatar.setDensity(50); 
+  sensor.h_avatar.setDensity(400); 
   sensor.h_avatar.setFill(255,0,0); 
-  sensor.h_avatar.setSensor(true);
+  // sensor.h_avatar.setSensor(true);
+
+  if(ui != null)
+    ui.setSensor(sensor);
 
   sensor.init(world, WORLD_WIDTH/2, BOUNDARY_SIZE + 5);
 }
 
-void removeSensor(){
-  sensor = null;
-}
 
 FCircle initBall(float radius, float x, float y, float ballFriction, boolean isHaptic){
   FCircle tempBall = new FCircle(radius);
@@ -204,27 +209,43 @@ void setup() {
   ui.init(WORLD_WIDTH, WORLD_HEIGHT, BOUNDARY_SIZE);
   world = ui.getWorld();  
   
-  ball = initBall(2* ballRadius, WORLD_WIDTH/4, WORLD_HEIGHT/2, 0.0f, false);
-  basePlate = initBox(BOUNDARY_SIZE, BOUNDARY_SIZE * 5, platePositionX, platePositionY, false);
+  // ball = initBall(2* ballRadius, WORLD_WIDTH/4, WORLD_HEIGHT/2, 0.0f, false);
+  // basePlate = initBox(BOUNDARY_SIZE, BOUNDARY_SIZE * 5, platePositionX, platePositionY, false);
+ 
+  asteroid = loadImage("asteroid.png");
+  gravwell_l = loadImage("GravWell.png");
+  gravwell_m = loadImage("GravWell.png");
+  gravwell_s = loadImage("GravWell.png");
  
   //Initialization of balls for Modules 1 and 2
   bouncey_ball_1 = initBall(4* ballRadius, WORLD_WIDTH/2, WORLD_HEIGHT/2, 0.0f, false);
   bouncey_ball_1.setVelocity(25,25);
   
   bouncey_ball_2 = initBall(10* ballRadius, WORLD_WIDTH/2, WORLD_HEIGHT/2, 0.0f, false);
- bouncey_ball_2.setVelocity(50,50);
+  bouncey_ball_2.setVelocity(50,50);
  
  //Initialization of Grav wells for module 3
   
-  well_large = initWell(15, WORLD_WIDTH/4, WORLD_HEIGHT/3.5);
+  
+ well_large = initWell(15, WORLD_WIDTH/2, WORLD_HEIGHT/2.3);
+ gravwell_l.resize((int) (1.25*pixelsPerMeter*well_large.getSize()), (int) (1.25*pixelsPerMeter*well_large.getSize()));
+ well_large.attachImage(gravwell_l);
+ 
+  //well_large = initWell(15, WORLD_WIDTH/4, WORLD_HEIGHT/3.5);
   well_medium = initWell(10, WORLD_WIDTH/1.8, WORLD_HEIGHT/1.8);
+  gravwell_m.resize((int) (1.25*pixelsPerMeter*well_medium.getSize()), (int) (1.25*pixelsPerMeter*well_medium.getSize()));
+ well_medium.attachImage(gravwell_m);
+ 
   well_small = initWell(5, WORLD_WIDTH/1.2, WORLD_HEIGHT/3);
-
+  gravwell_s.resize((int) (1.25*pixelsPerMeter*well_small.getSize()), (int) (1.25*pixelsPerMeter*well_small.getSize()));
+ well_small.attachImage(gravwell_s);
+  
+ 
 
   /* Haply Board Setup */
   initHaply();  
   
-  
+ 
   world.draw();
 
   frameRate(baseFrameRate);
@@ -245,36 +266,69 @@ void draw(){
 
     // addSensor();
   //}
-  if(ui.getIsStart() && ui.getCurrentLevel() == 1){
-    println("This level");
-    world = ui.getWorld();
-    ui.initElasticCollisions();
-    world.add(bouncey_ball_1);
-    addSensor();
-    println("Second level");
-    
-    }
+  if(ui.getIsStart()){
+    world =ui.getWorld();
 
-  else if(ui.getIsStart() && ui.getCurrentLevel() == 2){
-    println("This level");
-    world = ui.getWorld();
-    ui.initInelasticCollisions();
-    world.add(bouncey_ball_2);
-    addSensor();
-    println("Third level");
- }
- 
- else if(ui.getIsStart() && ui.getCurrentLevel()==3){
-    world = ui.getWorld();
-    ui.initGravity();    
-   
-    addSensor();
-    world.add(well_large);
-    world.add(well_medium);
-    world.add(well_small);
- }
-    
- else if(renderingForce == false){
+    switch(ui.getCurrentLevel()){
+      case 1:
+        ui.initElasticCollisions();
+        world.add(bouncey_ball_1);
+        addSensor();
+        println("Second level");
+        break;
+
+      case 2:
+        ui.initInelasticCollisions();
+        asteroid.resize((int) (pixelsPerMeter*bouncey_ball_2.getSize()), (int) (pixelsPerMeter*bouncey_ball_2.getSize()));
+        bouncey_ball_2.attachImage(asteroid);
+        world.add(bouncey_ball_2);
+        addSensor();
+        println("Third level");
+        break;
+        
+      case 3:
+        ui.initAllCollisions();
+        world.add(bouncey_ball_1);
+        world.add(bouncey_ball_2);
+        addSensor();
+        break;
+      
+      case 4:
+        ui.initGravity_single();   
+        addSensor();
+        world.add(well_large);
+        // world.add(well_medium);
+        // world.add(well_small);
+        //arrow(xE, yE, fEE.x, fEE.y);
+        //line(200, 100, 600, 400);
+        break;
+     
+     case 5:
+        ui.initGravity_triple();   
+        addSensor();
+        world.add(well_large);
+        world.add(well_medium);
+        world.add(well_small);
+        //arrow(xE, yE, fEE.x, fEE.y);
+        //line(200, 100, 600, 400);
+        break;
+        
+      case 6:
+        ui.initSandbox();   
+        addSensor();
+        world.add(well_medium);
+        world.add(well_small);
+        asteroid.resize((int) (pixelsPerMeter*bouncey_ball_1.getSize()), (int) (pixelsPerMeter*bouncey_ball_1.getSize()));
+        bouncey_ball_1.attachImage(asteroid);
+        
+        
+        world.add(bouncey_ball_1);
+        world.add(bouncey_ball_2);
+        //arrow(xE, yE, fEE.x, fEE.y);
+        //line(200, 100, 600, 400);
+        break;
+    }
+  } else if(renderingForce == false){
     background(255);
     
     world.draw();
@@ -284,31 +338,32 @@ void draw(){
 class SimulationThread implements Runnable{
   public void run(){
     renderingForce = true;
-
-     if(haplyBoard.data_available()){
-      /* GET END-EFFECTOR STATE (TASK SPACE) */
-       widgetOne.device_read_data();
     
-       angles.set(widgetOne.get_device_angles()); 
-       posEE.set(widgetOne.get_device_position(angles.array()));
-       posEE.set(posEE.copy().mult(200));  
-     }
+    if(haplyBoard.data_available() && sensor != null){
+     /* GET END-EFFECTOR STATE (TASK SPACE) */
+        
 
- 
-    //if(ui.getCurrentLevel() == 1){
-    //  elasticCollisions();
-    //}
+      if(ui.getIsReset()){
+        posEE.set(0,0);
+        widgetOne.device_set_parameters();
+        ui.setIsReset(false);
+      }else{
+        widgetOne.device_read_data();
     
-  else if (ui.getCurrentLevel() == 3){
-       gravforce_arr1 = calcGravForces(well_large, mass_large);      
-       gravforce_arr2 = calcGravForces(well_medium, mass_medium); 
-       gravforce_arr3 = calcGravForces(well_small, mass_small);
-       
-       gravforce_totx = gravforce_arr1[0]+gravforce_arr2[0]+gravforce_arr3[0];
-       gravforce_toty = gravforce_arr1[1]+gravforce_arr2[1]+gravforce_arr3[1];
-       
-       fEE.set(gravforce_totx, gravforce_toty);
+        angles.set(widgetOne.get_device_angles()); 
+        posEE.set(widgetOne.get_device_position(angles.array()));
+      }
+
+      posEE.set(posEE.copy().mult(200));
+      xE = pixelsPerMeter*posEE.x;
+      yE = pixelsPerMeter*posEE.y;
+    
+      sensor.setToolPosition(WORLD_WIDTH/2 - (2.5*posEE.x), (BOUNDARY_SIZE) + (2*posEE.y) - 7); 
+      sensor.updateCouplingForce();
     }
+
+    
+  
     
 
     //Adjust the UI controls
@@ -316,18 +371,19 @@ class SimulationThread implements Runnable{
     ui.setBallVelocity((float) Math.sqrt(Math.pow(ballVelocityX, 2) + Math.pow(ballVelocityY, 2)));
     
     if(sensor != null){
-       sensor.setToolPosition(WORLD_WIDTH/2 - (2.5*(posEE).x), (BOUNDARY_SIZE) + (2*(posEE).y) - 6); 
-       sensor.updateCouplingForce();
-     }
-    
-    if(sensor != null){
-      fEE.set(-sensor.getVirtualCouplingForceX(), sensor.getVirtualCouplingForceY());
-      fEE.div(100000); //dynes to newtons
+      sensor.h_avatar.setDamping(dampingForce);
+
+      if(ui.getIsHapticsOn()){
+        fEE.set(-sensor.getVirtualCouplingForceX(), sensor.getVirtualCouplingForceY());        
+      }else{
+        fEE.set(0,0);
+      }
+      fEE.div(dampingScale);
+      torques.set(widgetOne.set_device_torques(fEE.array()));
+      widgetOne.device_write_torques();
+      
     }
     
-     torques.set(widgetOne.set_device_torques(fEE.array()));
-     widgetOne.device_write_torques();
-
     world.step();
 
     renderingForce = false;
@@ -453,21 +509,45 @@ void keyPressed(){
 
 void contactStarted(FContact c){ //Called on contact between any 2 objects
 
-    FBody body1 = c.getBody1(); //Read bodies involved
-    FBody body2 = c.getBody2();
+  FBody body1 = c.getBody1(); //Read bodies involved
+  FBody body2 = c.getBody2();
 
-  if (body1.isSensor() == true || body2.isSensor() == true){ //Exit function if one of the objects is a sensor (non-solid)
-      return;
-    }
-  if (ui.getCurrentLevel() == 1){ //Check for first level
+
+  if (body1.isSensor() == true || body2.isSensor() == true ){ //Exit function if one of the objects is a sensor (non-solid)
+  
+  // add if haptics due to boundary contacts needs to be skipped -> || body1.getName().contains("Boundary") || body2.getName().contains("Boundary")
+    return;
+  }
+  if(ui.getIsHapticsOn()){
+    if (ui.getCurrentLevel() == 1){ //Check for first level
   
       commit_elastic_results(c, body1, body2); //Elastic collision function
+
+    }else if (ui.getCurrentLevel() == 2){ //Check for second level
+      
+      commit_inelastic_results(c, body1, body2, 0.5); //Inelastic Collision function
+      
+    }else if (ui.getCurrentLevel() == 3){
+
+      gravforce_arr1 = calcGravForces(well_large, mass_large);      
+      // gravforce_arr2 = calcGravForces(well_medium, mass_medium); 
+      // gravforce_arr3 = calcGravForces(well_small, mass_small);
+      
+      // gravforce_totx = gravforce_arr1[0]+gravforce_arr2[0]+gravforce_arr3[0];
+      // gravforce_toty = gravforce_arr1[1]+gravforce_arr2[1]+gravforce_arr3[1];
+
+      gravforce_totx = gravforce_arr1[0];
+      gravforce_toty = gravforce_arr1[1];
+      
+      fEE.set(gravforce_totx, gravforce_toty);
+      
     }
-    
-  else if (ui.getCurrentLevel() == 2){ //Check for second level
-     
-    commit_inelastic_results(c, body1, body2, 0.5); //Inelastic Collision function
-    }
+  }
+  
+
+  fEE.div(dampingScale);
+  torques.set(widgetOne.set_device_torques(fEE.array()));
+  widgetOne.device_write_torques();
     
 }
 
@@ -503,13 +583,7 @@ void commit_elastic_results (FContact c, FBody body1, FBody body2){ //Elastic co
   body2.setRestitution(abs((float)V2_rat));
   
 
-    fEE.set(150*c.getNormalX()*KExf_total, 150*c.getNormalY()*KEyf_total);
-
-  
-  
-  torques.set(widgetOne.set_device_torques(fEE.array()));
-  widgetOne.device_write_torques();
-  
+  fEE.set(150*c.getNormalX()*KExf_total, 150*c.getNormalY()*KEyf_total);  
  
   //Determine change in slider based on percent of max speed (set as 50 in X, 50 in Y)
   if (body1 == bouncey_ball_1){
@@ -520,11 +594,11 @@ void commit_elastic_results (FContact c, FBody body1, FBody body2){ //Elastic co
     Perc =  Math.sqrt(v2x_f*v2x_f + v2y_f*v2y_f)/Math.sqrt(50*50 + 50*50);
   }
   
+  Perc = constrain((float) Perc,0,1);
   ui.Impact_Slider.setValue((float) Perc*100); //update slider
   double D = 20* (float) Perc;
   delay((int) D);
-  
- 
+
   
 }
 
@@ -564,8 +638,7 @@ void commit_inelastic_results (FContact c, FBody body1, FBody body2, float KE_lo
   body2.setRestitution(KE_loss_fract*abs((float)V2_rat));
   
   fEE.set(150*c.getNormalX()*KExf_total, 150*c.getNormalY()*KEyf_total);
-  torques.set(widgetOne.set_device_torques(fEE.array()));
-  widgetOne.device_write_torques();
+  
   
   if (body1 == bouncey_ball_2){
     Perc =  Math.sqrt(v1x_f*v1x_f + v1y_f*v1y_f)/Math.sqrt(50*50 + 50*50);
@@ -580,15 +653,16 @@ void commit_inelastic_results (FContact c, FBody body1, FBody body2, float KE_lo
    double D = 20* (float) Perc;
   delay((int) D);
   
-  bouncey_ball_2.setSize(bouncey_ball_2.getSize()*0.975);
+  bouncey_ball_2.setSize(bouncey_ball_2.getSize()*0.95);
+  asteroid.resize((int) (pixelsPerMeter*bouncey_ball_2.getSize()), (int) (pixelsPerMeter*bouncey_ball_2.getSize()));
   
 }
 
 
 public float[] calcGravForces(FBody well, float mass){
-    distance = (float)Math.sqrt(Math.pow(sensor.getToolPositionX()-well.getX(), 2)+Math.pow(sensor.getToolPositionY()-well.getY(),2));  //calculate distance between the two bodies
+    distance = (float)Math.sqrt(Math.pow(sensor.getToolPositionX()-well.getX(), 2)+Math.pow(sensor.getAvatarPositionY()-well.getY(),2));  //calculate distance between the two bodies
     gravforce = ((grav_const)*hap_mass*mass)/((float)Math.pow(distance,2));   //calculate gravitational force according to the universal gravitation equation        
-    print("Test \n");
+    
     angle = (float)Math.acos(abs(sensor.getToolPositionX()-well.getX())/distance);  //use inverse cos to find the angle 
     
     direction_x = Math.signum(sensor.getToolPositionX()-well.getX());  //get the direction that the x-force should be applied
@@ -598,7 +672,7 @@ public float[] calcGravForces(FBody well, float mass){
     gravforce_y = direction_y*gravforce*(float)Math.sin(angle);  //use the angle to get the y-comp of gravitational force
      
     float[] gravforce_arr = new float[]{gravforce_x, gravforce_y};
-  
+    print("Yesssssss \n");  
     //line(200, 100, 600, 400);
     return gravforce_arr; 
 }
