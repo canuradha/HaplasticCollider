@@ -31,6 +31,7 @@ FWorld world;
 float WORLD_WIDTH = 80.0;
 float WORLD_HEIGHT = 70.0;
 float BOUNDARY_SIZE = 1;
+//asjfoadifja
 
 Knob plateVelocity, ballVelocity, plateM, ballM;    // to remove
 
@@ -66,7 +67,7 @@ int CCW = 1;
 float dampingForce = 50;
 float virtualCouplingX = 0;
 float virtualCouplingY = 0;
-float dampingScale = 100000;
+float dampingScale = 10000;
 
 //Gravity well variable declarations
 float xE, yE = 0; 
@@ -148,10 +149,14 @@ void addSensor(){
   sensor = new HVirtualCoupling((3)); 
   sensor.h_avatar.setDensity(400); 
   sensor.h_avatar.setFill(255,0,0); 
+  sensor.h_avatar.setDamping(50);
   // sensor.h_avatar.setSensor(true);
 
-  if(ui != null)
+  if(ui != null){
     ui.setSensor(sensor);
+    
+  }
+    
 
   sensor.init(world, WORLD_WIDTH/2, BOUNDARY_SIZE + 5);
 }
