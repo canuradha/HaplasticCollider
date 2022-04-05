@@ -245,7 +245,7 @@ void setup() {
  gravwell_s.resize((int) (1.25*pixelsPerMeter*well_small.getSize()), (int) (1.25*pixelsPerMeter*well_small.getSize()));
  well_small.attachImage(gravwell_s);
   
- arrow_line = new FLine(0, 0, 10, 10); 
+ arrow_line = new FLine(WORLD_WIDTH/2 - (2.5*posEE.x), (BOUNDARY_SIZE) + (2*posEE.y) - 7, 10, 10); 
  
 
   /* Haply Board Setup */
@@ -303,10 +303,11 @@ void draw(){
         ui.initGravity_single();   
         addSensor();
         world.add(well_single);
+        //world.add(arrow_line);
         // world.add(well_medium);
         // world.add(well_small);
         //arrow(xE, yE, fEE.x, fEE.y);
-        line(posEE.x, posEE.y, posEE.x+10, posEE.y+10);
+        //line(posEE.x, posEE.y, posEE.x+10, posEE.y+10);
         break;
      
      case 5:
@@ -337,6 +338,13 @@ void draw(){
   } else if(renderingForce == false){
     background(255);
     
+    if(ui.getCurrentLevel() == 4){
+      //line(posEE.x, posEE.y, 100, 100);
+      arrow(xE, yE, fEE.x, fEE.y);
+    } else if(ui.getCurrentLevel() == 5){
+      arrow(xE, yE, fEE.x, fEE.y);
+    }
+    
     world.draw();
   }
 }
@@ -358,11 +366,12 @@ class SimulationThread implements Runnable{
     
         angles.set(widgetOne.get_device_angles()); 
         posEE.set(widgetOne.get_device_position(angles.array()));
+        
+        xE = pixelsPerMeter*posEE.x;
+        yE = pixelsPerMeter*posEE.y;
       }
 
       posEE.set(posEE.copy().mult(200));
-      //xE = pixelsPerMeter*posEE.x;
-      //yE = pixelsPerMeter*posEE.y;
     
       sensor.setToolPosition(WORLD_WIDTH/2 - (2.5*posEE.x), (BOUNDARY_SIZE) + (2*posEE.y) - 7); 
       sensor.updateCouplingForce();
@@ -384,8 +393,11 @@ class SimulationThread implements Runnable{
           xE = pixelsPerMeter*posEE.x;
           yE = pixelsPerMeter*posEE.y;
           gravforce_arr0 = calcGravForces(well_single, mass_large);      
-    
+          
           fEE.set(gravforce_arr0[0], gravforce_arr0[1]);
+          
+          //arrow_line.setStart(-xE+(WORLD_WIDTH/2*pixelsPerMeter), yE);
+          //arrow_line.setEnd(-xE+(WORLD_WIDTH/2*pixelsPerMeter)+10, yE+10);
           //line(200, 100, 600, 400);  
           //line(posEE.x, posEE.y, posEE.x+10, posEE.y+10);
           
@@ -691,12 +703,18 @@ public float[] calcGravForces(FBody well, float mass){
 }
 
 void arrow(float x1, float y1, float x2, float y2){
-  x2=x2*0.5;
-  y2=y2*0.5;
-  //WORLD_WIDTH = 80; WORLD_HEIGHT = 70;
-  x1 = -x1+(WORLD_WIDTH/2*pixelsPerMeter);
-  y1=y1-(WORLD_HEIGHT/2*pixelsPerMeter);
-  //y1=500;
+  x2=x2*10;
+  y2=y2*10;
+  //WORLD_WIDTH = 80; WORLD_HEIGHT = 70; pixelsPerMeter = 10; 
+
+  x1 = -x1*2.5+400;
+  y1 = y1*2-55;
+  //x1 = 400; 
+  //print(x1+" | ");
+  //x1 = WORLD_WIDTH/2 - (2.5*posEE.x); 
+  //y1=y1-(WORLD_HEIGHT/2*pixelsPerMeter)+(WORLD_HEIGHT+250);
+  
+  //y1=300;
   //700 AND 30
   y2=y2+y1;
   x2=-x2+x1;
