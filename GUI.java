@@ -22,8 +22,7 @@ public class GUI{
     private float WORLD_WIDTH, WORLD_HEIGHT, BOUNDARY_SIZE;
     int currentLevel = 0;
     boolean isStart, isReset, isHapticsOn;
-
-
+    
     Q1 questions = new Q1();
 
 
@@ -133,11 +132,13 @@ public class GUI{
         menuDesc =  ui.addTextlabel("LevelDesc")
                         .setMultiline(true)
                         .setText("")
-                        .setSize(350, 100)
+                        .setSize(320, 400)
                         .setPosition(850, 100)
                         .setFont(questionsFont)
                         .setColorValue(0x00000060)
                         .hide();
+                        
+       
 
     }
 
@@ -204,7 +205,7 @@ public class GUI{
         
         ui.addTextlabel("welcomeContent")
             .setMultiline(true)
-            .setText("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Eu volutpat odio facilisis mauris sit amet. Ut sem nulla pharetra diam sit amet. Et leo duis ut diam quam nulla porttitor massa id. Pretium lectus quam id leo in vitae turpis massa. Senectus et netus et malesuada fames ac turpis egestas integer. A arcu cursus vitae congue mauris. Quis blandit turpis cursus in hac. Nunc scelerisque viverra mauris in aliquam sem. Mi proin sed libero enim sed faucibus turpis in eu. Erat nam at lectus urna duis. Imperdiet proin fermentum leo vel orci porta non. Integer enim neque volutpat ac tincidunt vitae semper quis lectus. Vel elit scelerisque mauris pellentesque pulvinar pellentesque habitant morbi tristique. Rhoncus aenean vel elit scelerisque. Tristique sollicitudin nibh sit amet commodo nulla. Nunc sed velit dignissim sodales ut eu sem integer vitae. Nunc sed augue lacus viverra vitae congue. Lacus suspendisse faucibus interdum posuere lorem ipsum dolor sit.")
+            .setText("Hello and welcome to Haplastic Collider! The following modules aim to act as an experiential educational tool for teaching users the fundamentals of two essential physics concepts in an engaging way! This includes collisions and gravitational (attraction) forces. By understanding these foundational physics concepts, one can have easier future learning about complex topics such as electron scattering, which can give a better understanding of things like how X-Ray machines work, or electrostatic attraction, used in topics such as electrical engineering and advanced chemistry. Aside from academics, understanding collision and gravity can give more context for daily life. We experience these forces constantly in everyday life, whether its watching an apple fall from a tree like Isaac Newton or playing a game of pool or croquet. \n\nThe following modules use a haptics interface to allow you to feel the forces that would result from either a collision (impact) or gravity. This is done to allow you to feel the difference certain factors like mass and velocity make in the magnitude of these forces. To ensure the best experience, we highly reccomend you to play with the changeable variables, hold on to the Haply and have fun!")
             .setSize(800, 500)
             .setPosition(200, 200)
             .setFont(contentFont)
@@ -243,7 +244,7 @@ public class GUI{
         Impact_Slider.show();
         SliderLabel.show();
         menuTitle.setText("Elastic Collisions").show();
-        menuDesc.setText("Brief Description about Elastic Collisions").show();
+        menuDesc.setText("Elastic collisions have no loss of kinetic energy; in other words, both momentum and kinetic energy are the same before and after the collision. In the real world, examples of elastic collisions include scattering of light, atomic or subatomic particles.  \n\n Kinetic energy is defined mathematically as: \n\n Ke = 0.5*m*v^2 (1a), where m = mass, v = velocity \n\n Momentum is defined mathematically by the formula: \n\n p = mv (1b), where m = mass, v = velocity \n\nThis means that while momemtum scales linearly with mass and velocity, kinetic energy scales linearly with mass but exponenetially with velocity. The higher the mass and konetic energy of the objects involved in the collision, the larger the impact force created on collision").show();
         
     }
     
@@ -255,28 +256,45 @@ public class GUI{
         Impact_Slider.show();
         SliderLabel.show();
         menuTitle.setText("Inelastic Collisions").show();
-        menuDesc.setText("Brief Description about Inelastic Collisions").show();
+        menuDesc.setText("In inelastic collisions, some of the kinetic energy of the objects is lost to the surroundings or changed into another form of energy such as sound or heat. Because of this loss, kinetic energy is no longer conserved in the objects involved through the collision, although momentum is. Therefore: \n\n KEi ≠ Kef,\n\n where KEi is Kinetic energy before collision and KEf is after.  \n\nInelastic collisions are more common in our daily lives, including things like car crashes, the game of pool, or the classic Newton’s cradle. \n\nA major difference between elastic and inelastic collisions is this loss in energy. Due to the loss of kinetic energy in inelastic collisions, two collsions, one elastic and one inelastic, with the exact same intitial parameters (object masses and velocities), will have different outcomes.").show();
 
     }
     
-     public void initGravity(){
+     public void initGravity_single(){
         initBackground();
         ballM.show();
         menuTitle.setText("Gravitational Forces").show();
-        menuDesc.setText("Brief Description about Gravitational Forces").show();
+        menuDesc.setText("Gravity is the universal force that "+
+        "causes bodies to be drawn towards each other. It is what keeps you on the ground and causes objects to fall. "+
+        "All objects are attracted to each other by the force of gravity defined by the universal gravitation equation below: \n\n"+
+        "Gravitational Force = G * m1 * m2 / d², \nWhere G is the universal gravitation constant (G = 6.67 * 10-11 Nm²/kg²), "+
+        "m1 is the mass of body 1, m2 is the mass of body 2, and d is the distance between the centre of the two bodies. \n\n"+
+        "Based on this equation, the force of gravity is directly proportional to the mass of the bodies and inversely proportional"+
+        " to the square of the distance between them. \n\nBlack holes are a place in "+
+        "space where the pull of gravitational force is so strong that even light cannot escape. Move the end effector around the screen "+
+        "and observe how the force feels as you move closer to the black hole. ").show();
     }
-
+    
+    public void initGravity_triple(){
+        initBackground();
+        ballM.show();
+        menuTitle.setText("Gravitational Forces").show();
+        menuDesc.setText("When there are multiple bodies in a system, the gravitational force between the bodies interacts "+
+        "in a manner that is dependent on their mass and distance. Move the end effector around the screen and fell how the "+
+        "direction of force changes based on your proximity to the different bodies. When you are ready, answer the questions "+
+        "below to test your understanding. ").show();
+        //String[] ans = {"Decreased to half its initial value\n", "Increased to twice its initial value\n", 
+        //"Increased to four times its initial value\n", "The gravitational force remains unchanged"};
+        //addQuestion("Q1", 
+        //"If the distance between Earth and the moon is doubled, with no change in mass, the gravitational force of attraction is:",
+        //850,400, ans);
+    }
 
     public void initAllCollisions(){
         initBackground();
         // startButton.setLock(true);
 
-        ui.addTextlabel("LevelTitle")
-            .setText("Elastic and Inelastic \nCollisions")
-            .setSize(300, 50)
-            .setPosition(850, 20)
-            .setFont(LevelTitleFont)
-            .setColorValue(0x00000000);
+        menuTitle.setText("Elastic and Inelastic").show();
 
             
             int posX = 850;
@@ -292,14 +310,19 @@ public class GUI{
                     Arrays.copyOfRange(questions.getQuestions().get(i), 2, questions.getQuestions().get(i).length) 
                 );
             }         
-            
+     }
+    
+    public void initSandbox(){
+        initBackground();
+        // startButton.setLock(true);
 
+        menuTitle.setText("Sandbox").show() ;
     }
 
     // Button Listeners
     private CallbackListener nextCallback = new CallbackListener(){
         public void controlEvent(CallbackEvent event) {
-            if(currentLevel < 4){
+            if(currentLevel < 6){
                 for(ControllerInterface<?>  t: ui.getAll()){
                     if(!t.getName().equals("Start")){
                         t.hide();

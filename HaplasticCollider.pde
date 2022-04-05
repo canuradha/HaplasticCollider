@@ -11,6 +11,13 @@ private final ScheduledExecutorService scheduler = Executors.newScheduledThreadP
 float pixelsPerMeter = 10.0;
 
 
+//Graphics
+PImage asteroid;
+PImage gravwell_s;
+PImage gravwell_m;
+PImage gravwell_l;
+PImage gravwell_single;
+
 
 // Haply Initializatons
 Board haplyBoard;
@@ -31,13 +38,13 @@ FWorld world;
 float WORLD_WIDTH = 80.0;
 float WORLD_HEIGHT = 70.0;
 float BOUNDARY_SIZE = 1;
-//asjfoadifja
 
 Knob plateVelocity, ballVelocity, plateM, ballM;    // to remove
 
 // World Object declarations
 FBox basePlate;
-FCircle ball, bouncey_ball_1, bouncey_ball_2, well_large, well_medium, well_small;
+FCircle ball, bouncey_ball_1, bouncey_ball_2, well_single, well_large, well_medium, well_small;
+FLine arrow_line; 
 
 // Object parameter variables
 float platePositionX = BOUNDARY_SIZE * 5;
@@ -67,7 +74,8 @@ int CCW = 1;
 float dampingForce = 50;
 float virtualCouplingX = 0;
 float virtualCouplingY = 0;
-float dampingScale = 10000;
+//float dampingScale = 100000;
+float dampingScale = 2;
 
 //Gravity well variable declarations
 float xE, yE = 0; 
@@ -82,25 +90,22 @@ float gravforce_x = 0;
 float gravforce_y = 0; 
 float gravforce = 0; 
 
-float             distance                           = 0;
-float             direction_x                        = 0;
-float             direction_y                        = 0;
-float             angle                              = 0;
+float distance = 0;
+float direction_x, direction_y, angle = 0;
 
-float[]           gravforce_arr1;
-float             gravforce_x1                       = 0;
-float             gravforce_y1                       = 0;
+float[] gravforce_arr0;
+float gravforce_x0, gravforce_y0 = 0;
 
-float[]           gravforce_arr2;
-float             gravforce_x2                       = 0;
-float             gravforce_y2                       = 0;
+float[] gravforce_arr1;
+float gravforce_x1, gravforce_y1 = 0;
 
-float[]           gravforce_arr3;
-float             gravforce_x3                       = 0;
-float             gravforce_y3                       = 0;
+float[] gravforce_arr2;
+float gravforce_x2, gravforce_y2 = 0;
 
-float             gravforce_totx                     = 0;
-float             gravforce_toty                     = 0;
+float[] gravforce_arr3;
+float gravforce_x3, gravforce_y3 = 0;
+
+float gravforce_totx, gravforce_toty = 0;
 
 //Collison variable initiliizations 
  float Vx1_i;
@@ -115,7 +120,6 @@ float             gravforce_toty                     = 0;
   float v1y_f;
   float v2x_f;
   float v2y_f;
-  
   
   float KExf_total;
   float KEyf_total;
@@ -149,14 +153,10 @@ void addSensor(){
   sensor = new HVirtualCoupling((3)); 
   sensor.h_avatar.setDensity(400); 
   sensor.h_avatar.setFill(255,0,0); 
-  sensor.h_avatar.setDamping(50);
   // sensor.h_avatar.setSensor(true);
 
-  if(ui != null){
+  if(ui != null)
     ui.setSensor(sensor);
-    
-  }
-    
 
   sensor.init(world, WORLD_WIDTH/2, BOUNDARY_SIZE + 5);
 }
@@ -164,7 +164,7 @@ void addSensor(){
 
 FCircle initBall(float radius, float x, float y, float ballFriction, boolean isHaptic){
   FCircle tempBall = new FCircle(radius);
-  tempBall.setPosition( WORLD_WIDTH/4, WORLD_HEIGHT/2); //Should this be X and Y
+  tempBall.setPosition(WORLD_WIDTH/4, WORLD_HEIGHT/2); //Should this be X and Y
   tempBall.setFill(0, 0, 150);
   tempBall.setHaptic(isHaptic);
   tempBall.setRestitution(1);
@@ -213,6 +213,12 @@ void setup() {
   // ball = initBall(2* ballRadius, WORLD_WIDTH/4, WORLD_HEIGHT/2, 0.0f, false);
   // basePlate = initBox(BOUNDARY_SIZE, BOUNDARY_SIZE * 5, platePositionX, platePositionY, false);
  
+  asteroid = loadImage("asteroid.png");
+  gravwell_single = loadImage("GravWell.png");
+  gravwell_l = loadImage("GravWell.png");
+  gravwell_m = loadImage("GravWell.png");
+  gravwell_s = loadImage("GravWell.png");
+ 
   //Initialization of balls for Modules 1 and 2
   bouncey_ball_1 = initBall(4* ballRadius, WORLD_WIDTH/2, WORLD_HEIGHT/2, 0.0f, false);
   bouncey_ball_1.setVelocity(25,25);
@@ -222,15 +228,30 @@ void setup() {
  
  //Initialization of Grav wells for module 3
   
- well_large = initWell(15, WORLD_WIDTH/2, WORLD_HEIGHT/2.3);
-  //well_large = initWell(15, WORLD_WIDTH/4, WORLD_HEIGHT/3.5);
-  //well_medium = initWell(10, WORLD_WIDTH/1.8, WORLD_HEIGHT/1.8);
-  //well_small = initWell(5, WORLD_WIDTH/1.2, WORLD_HEIGHT/3);
+  
+ well_single = initWell(15, WORLD_WIDTH/2, WORLD_HEIGHT/2.3);
+ gravwell_single.resize((int)(1.25*pixelsPerMeter*well_single.getSize()), (int)(1.25*pixelsPerMeter*well_single.getSize()));
+ well_single.attachImage(gravwell_single);
+ 
+ well_large = initWell(15,WORLD_WIDTH/4, WORLD_HEIGHT/3.5);
+ gravwell_l.resize((int)(1.25*pixelsPerMeter*well_large.getSize()), (int)(1.25*pixelsPerMeter*well_large.getSize()));
+ well_large.attachImage(gravwell_l);
+ 
+ well_medium = initWell(10, WORLD_WIDTH/1.8, WORLD_HEIGHT/1.8);
+ gravwell_m.resize((int) (1.25*pixelsPerMeter*well_medium.getSize()), (int) (1.25*pixelsPerMeter*well_medium.getSize()));
+ well_medium.attachImage(gravwell_m);
+ 
+ well_small = initWell(5, WORLD_WIDTH/1.2, WORLD_HEIGHT/3);
+ gravwell_s.resize((int) (1.25*pixelsPerMeter*well_small.getSize()), (int) (1.25*pixelsPerMeter*well_small.getSize()));
+ well_small.attachImage(gravwell_s);
+  
+ arrow_line = new FLine(WORLD_WIDTH/2 - (2.5*posEE.x), (BOUNDARY_SIZE) + (2*posEE.y) - 7, 10, 10); 
+ 
 
   /* Haply Board Setup */
   initHaply();  
   
-  
+ 
   world.draw();
 
   frameRate(baseFrameRate);
@@ -264,31 +285,65 @@ void draw(){
 
       case 2:
         ui.initInelasticCollisions();
+        asteroid.resize((int) (pixelsPerMeter*bouncey_ball_2.getSize()), (int) (pixelsPerMeter*bouncey_ball_2.getSize()));
+        bouncey_ball_2.attachImage(asteroid);
         world.add(bouncey_ball_2);
         addSensor();
         println("Third level");
         break;
-      
+        
       case 3:
-        ui.initGravity();   
-        addSensor();
-        world.add(well_large);
-        // world.add(well_medium);
-        // world.add(well_small);
-        //arrow(xE, yE, fEE.x, fEE.y);
-        //line(200, 100, 600, 400);
-        break;
-
-      case 4:
         ui.initAllCollisions();
         world.add(bouncey_ball_1);
         world.add(bouncey_ball_2);
         addSensor();
         break;
-
+      
+      case 4:
+        ui.initGravity_single();   
+        addSensor();
+        world.add(well_single);
+        //world.add(arrow_line);
+        // world.add(well_medium);
+        // world.add(well_small);
+        //arrow(xE, yE, fEE.x, fEE.y);
+        //line(posEE.x, posEE.y, posEE.x+10, posEE.y+10);
+        break;
+     
+     case 5:
+        ui.initGravity_triple();   
+        addSensor();
+        world.add(well_large);
+        world.add(well_medium);
+        world.add(well_small);
+        //arrow(xE, yE, fEE.x, fEE.y);
+        //line(200, 100, 600, 400);
+        break;
+        
+      case 6:
+        ui.initSandbox();   
+        addSensor();
+        world.add(well_medium);
+        world.add(well_small);
+        asteroid.resize((int) (pixelsPerMeter*bouncey_ball_1.getSize()), (int) (pixelsPerMeter*bouncey_ball_1.getSize()));
+        bouncey_ball_1.attachImage(asteroid);
+        
+        
+        world.add(bouncey_ball_1);
+        world.add(bouncey_ball_2);
+        //arrow(xE, yE, fEE.x, fEE.y);
+        //line(200, 100, 600, 400);
+        break;
     }
   } else if(renderingForce == false){
     background(255);
+    
+    if(ui.getCurrentLevel() == 4){
+      //line(posEE.x, posEE.y, 100, 100);
+      arrow(xE, yE, fEE.x, fEE.y);
+    } else if(ui.getCurrentLevel() == 5){
+      arrow(xE, yE, fEE.x, fEE.y);
+    }
     
     world.draw();
   }
@@ -311,19 +366,17 @@ class SimulationThread implements Runnable{
     
         angles.set(widgetOne.get_device_angles()); 
         posEE.set(widgetOne.get_device_position(angles.array()));
+        
+        //xE = pixelsPerMeter*posEE.x;
+        //yE = pixelsPerMeter*posEE.y;
       }
 
       posEE.set(posEE.copy().mult(200));
-      xE = pixelsPerMeter*posEE.x;
-      yE = pixelsPerMeter*posEE.y;
     
       sensor.setToolPosition(WORLD_WIDTH/2 - (2.5*posEE.x), (BOUNDARY_SIZE) + (2*posEE.y) - 7); 
       sensor.updateCouplingForce();
+      
     }
-
-    
-  
-    
 
     //Adjust the UI controls
     ui.setPlateVelocity((float) Math.sqrt(Math.pow(plateVelocityX, 2) + Math.pow(plateVelocityY, 2)));
@@ -333,10 +386,37 @@ class SimulationThread implements Runnable{
       sensor.h_avatar.setDamping(dampingForce);
 
       if(ui.getIsHapticsOn()){
-        fEE.set(-sensor.getVirtualCouplingForceX(), sensor.getVirtualCouplingForceY());        
+        fEE.set(-sensor.getVirtualCouplingForceX(), sensor.getVirtualCouplingForceY());  
+        if (ui.getCurrentLevel() == 4){
+          xE = pixelsPerMeter*posEE.x;
+          yE = pixelsPerMeter*posEE.y;
+          gravforce_arr0 = calcGravForces(well_single, mass_large);      
+          
+          fEE.set(gravforce_arr0[0], gravforce_arr0[1]);
+          
+          //arrow_line.setStart(-xE+(WORLD_WIDTH/2*pixelsPerMeter), yE);
+          //arrow_line.setEnd(-xE+(WORLD_WIDTH/2*pixelsPerMeter)+10, yE+10);
+          //line(200, 100, 600, 400);  
+          //line(posEE.x, posEE.y, posEE.x+10, posEE.y+10);
+          
+        }else if (ui.getCurrentLevel() == 5){
+          xE = pixelsPerMeter*posEE.x;
+          yE = pixelsPerMeter*posEE.y;
+          
+          gravforce_arr1 = calcGravForces(well_large, mass_large);      
+          gravforce_arr2 = calcGravForces(well_medium, mass_medium); 
+          gravforce_arr3 = calcGravForces(well_small, mass_small);
+          
+          gravforce_totx = gravforce_arr1[0]+gravforce_arr2[0]+gravforce_arr3[0];
+          gravforce_toty = gravforce_arr1[1]+gravforce_arr2[1]+gravforce_arr3[1];
+          
+          fEE.set(gravforce_totx, gravforce_toty);
+        
+        }
       }else{
         fEE.set(0,0);
       }
+          
       fEE.div(dampingScale);
       torques.set(widgetOne.set_device_torques(fEE.array()));
       widgetOne.device_write_torques();
@@ -486,20 +566,6 @@ void contactStarted(FContact c){ //Called on contact between any 2 objects
       
       commit_inelastic_results(c, body1, body2, 0.5); //Inelastic Collision function
       
-    }else if (ui.getCurrentLevel() == 3){
-
-      gravforce_arr1 = calcGravForces(well_large, mass_large);      
-      // gravforce_arr2 = calcGravForces(well_medium, mass_medium); 
-      // gravforce_arr3 = calcGravForces(well_small, mass_small);
-      
-      // gravforce_totx = gravforce_arr1[0]+gravforce_arr2[0]+gravforce_arr3[0];
-      // gravforce_toty = gravforce_arr1[1]+gravforce_arr2[1]+gravforce_arr3[1];
-
-      gravforce_totx = gravforce_arr1[0];
-      gravforce_toty = gravforce_arr1[1];
-      
-      fEE.set(gravforce_totx, gravforce_toty);
-      
     }
   }
   
@@ -553,11 +619,11 @@ void commit_elastic_results (FContact c, FBody body1, FBody body2){ //Elastic co
     Perc =  Math.sqrt(v2x_f*v2x_f + v2y_f*v2y_f)/Math.sqrt(50*50 + 50*50);
   }
   
+  Perc = constrain((float) Perc,0,1);
   ui.Impact_Slider.setValue((float) Perc*100); //update slider
   double D = 20* (float) Perc;
   delay((int) D);
-  
- 
+
   
 }
 
@@ -612,7 +678,8 @@ void commit_inelastic_results (FContact c, FBody body1, FBody body2, float KE_lo
    double D = 20* (float) Perc;
   delay((int) D);
   
-  bouncey_ball_2.setSize(bouncey_ball_2.getSize()*0.975);
+  bouncey_ball_2.setSize(bouncey_ball_2.getSize()*0.95);
+  asteroid.resize((int) (pixelsPerMeter*bouncey_ball_2.getSize()), (int) (pixelsPerMeter*bouncey_ball_2.getSize()));
   
 }
 
@@ -636,15 +703,20 @@ public float[] calcGravForces(FBody well, float mass){
 }
 
 void arrow(float x1, float y1, float x2, float y2){
-  x2=x2*0.5;
-  y2=y2*0.5;
-  //WORLD_WIDTH = 80; WORLD_HEIGHT = 70;
-  x1 = -x1+(WORLD_WIDTH/2*pixelsPerMeter);
-  y1=y1-(WORLD_HEIGHT/2*pixelsPerMeter)-1000;
-  y1=500;
+  x2=x2*10;
+  y2=y2*10;
+  //WORLD_WIDTH = 80; WORLD_HEIGHT = 70; pixelsPerMeter = 10; 
+
+  //x1 = -x1*2.5+400;
+  //y1 = y1*2-55;
+  x1 = -x1 * (pixelsPerMeter/4) + (WORLD_WIDTH*5);
+  y1 = y1 * (pixelsPerMeter/5) - (WORLD_HEIGHT/2) - 20;
+  
+
   //700 AND 30
   y2=y2+y1;
   x2=-x2+x1;
+  
   line(x1, y1, x2, y2);
   pushMatrix();
   translate(x2, y2);
