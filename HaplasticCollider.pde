@@ -367,8 +367,8 @@ class SimulationThread implements Runnable{
         angles.set(widgetOne.get_device_angles()); 
         posEE.set(widgetOne.get_device_position(angles.array()));
         
-        xE = pixelsPerMeter*posEE.x;
-        yE = pixelsPerMeter*posEE.y;
+        //xE = pixelsPerMeter*posEE.x;
+        //yE = pixelsPerMeter*posEE.y;
       }
 
       posEE.set(posEE.copy().mult(200));
@@ -377,8 +377,6 @@ class SimulationThread implements Runnable{
       sensor.updateCouplingForce();
       
     }
-
-     
 
     //Adjust the UI controls
     ui.setPlateVelocity((float) Math.sqrt(Math.pow(plateVelocityX, 2) + Math.pow(plateVelocityY, 2)));
@@ -402,7 +400,9 @@ class SimulationThread implements Runnable{
           //line(posEE.x, posEE.y, posEE.x+10, posEE.y+10);
           
         }else if (ui.getCurrentLevel() == 5){
-  
+          xE = pixelsPerMeter*posEE.x;
+          yE = pixelsPerMeter*posEE.y;
+          
           gravforce_arr1 = calcGravForces(well_large, mass_large);      
           gravforce_arr2 = calcGravForces(well_medium, mass_medium); 
           gravforce_arr3 = calcGravForces(well_small, mass_small);
@@ -707,14 +707,12 @@ void arrow(float x1, float y1, float x2, float y2){
   y2=y2*10;
   //WORLD_WIDTH = 80; WORLD_HEIGHT = 70; pixelsPerMeter = 10; 
 
-  x1 = -x1*2.5+400;
-  y1 = y1*2-55;
-  //x1 = 400; 
-  //print(x1+" | ");
-  //x1 = WORLD_WIDTH/2 - (2.5*posEE.x); 
-  //y1=y1-(WORLD_HEIGHT/2*pixelsPerMeter)+(WORLD_HEIGHT+250);
+  //x1 = -x1*2.5+400;
+  //y1 = y1*2-55;
+  x1 = -x1 * (pixelsPerMeter/4) + (WORLD_WIDTH*5);
+  y1 = y1 * (pixelsPerMeter/5) - (WORLD_HEIGHT/2) - 20;
   
-  //y1=300;
+
   //700 AND 30
   y2=y2+y1;
   x2=-x2+x1;

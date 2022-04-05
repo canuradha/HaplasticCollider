@@ -22,8 +22,7 @@ public class GUI{
     private float WORLD_WIDTH, WORLD_HEIGHT, BOUNDARY_SIZE;
     int currentLevel = 0;
     boolean isStart, isReset, isHapticsOn;
-
-
+    
     Q1 questions = new Q1();
 
 
@@ -265,20 +264,31 @@ public class GUI{
         initBackground();
         ballM.show();
         menuTitle.setText("Gravitational Forces").show();
-        menuDesc.setText("There are four fundamental forces that play a key role in physics: gravitational force, weak nuclear force, " + 
-        "strong nuclear force, and electromagnetic force. \n\nGravity is the force that causes a planet or body to draw other bodies towards" + 
-        " its center. All objects are attracted to each other by the force of gravitational attraction defined by the universal gravitation equation " + 
-        "below: Gravitational Force = G * m₁ * m₂ / d², \nWhere G represents the universal gravitation constant (G = 6.67 * 10-11 Nm2/kg2). \n\nMove the end effector around " + 
-        "the screen and observe how the force feels as you move closer to the black hole.").show();
+        menuDesc.setText("Gravity is the universal force that "+
+        "causes bodies to be drawn towards each other. It is what keeps you on the ground and causes objects to fall. "+
+        "All objects are attracted to each other by the force of gravity defined by the universal gravitation equation below: \n\n"+
+        "Gravitational Force = G * m1 * m2 / d², \nWhere G is the universal gravitation constant (G = 6.67 * 10-11 Nm²/kg²), "+
+        "m1 is the mass of body 1, m2 is the mass of body 2, and d is the distance between the centre of the two bodies. \n\n"+
+        "Based on this equation, the force of gravity is directly proportional to the mass of the bodies and inversely proportional"+
+        " to the square of the distance between them. \n\nBlack holes are a place in "+
+        "space where the pull of gravitational force is so strong that even light cannot escape. Move the end effector around the screen "+
+        "and observe how the force feels as you move closer to the black hole. ").show();
     }
     
     public void initGravity_triple(){
         initBackground();
         ballM.show();
         menuTitle.setText("Gravitational Forces").show();
-        menuDesc.setText("Brief Description about Gravitational Forces").show();
+        menuDesc.setText("When there are multiple bodies in a system, the gravitational force between the bodies interacts "+
+        "in a manner that is dependent on their mass and distance. Move the end effector around the screen and fell how the "+
+        "direction of force changes based on your proximity to the different bodies. When you are ready, answer the questions "+
+        "below to test your understanding. ").show();
+        //String[] ans = {"Decreased to half its initial value\n", "Increased to twice its initial value\n", 
+        //"Increased to four times its initial value\n", "The gravitational force remains unchanged"};
+        //addQuestion("Q1", 
+        //"If the distance between Earth and the moon is doubled, with no change in mass, the gravitational force of attraction is:",
+        //850,400, ans);
     }
-
 
     public void initAllCollisions(){
         initBackground();
