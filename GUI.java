@@ -133,11 +133,13 @@ public class GUI{
         menuDesc =  ui.addTextlabel("LevelDesc")
                         .setMultiline(true)
                         .setText("")
-                        .setSize(350, 100)
+                        .setSize(320, 400)
                         .setPosition(850, 100)
                         .setFont(questionsFont)
                         .setColorValue(0x00000060)
                         .hide();
+                        
+       
 
     }
 
@@ -263,7 +265,11 @@ public class GUI{
         initBackground();
         ballM.show();
         menuTitle.setText("Gravitational Forces").show();
-        menuDesc.setText("Brief Description about Gravitational Forces").show();
+        menuDesc.setText("There are four fundamental forces that play a key role in physics: gravitational force, weak nuclear force, " + 
+        "strong nuclear force, and electromagnetic force. \n\nGravity is the force that causes a planet or body to draw other bodies towards" + 
+        " its center. All objects are attracted to each other by the force of gravitational attraction defined by the universal gravitation equation " + 
+        "below: Gravitational Force = G * m₁ * m₂ / d², \nWhere G represents the universal gravitation constant (G = 6.67 * 10-11 Nm2/kg2). \n\nMove the end effector around " + 
+        "the screen and observe how the force feels as you move closer to the black hole.").show();
     }
     
     public void initGravity_triple(){
