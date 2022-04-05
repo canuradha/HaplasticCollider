@@ -338,7 +338,7 @@ public class GUI{
         public void controlEvent(ControlEvent event){
             if(event.isGroup()){
                 // switch(event.getName())
-                System.out.println(event.group().getName());
+                System.out.println(event.getGroup().getName());
             }
         }
     };
