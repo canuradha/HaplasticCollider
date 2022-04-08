@@ -1,17 +1,17 @@
 import controlP5.*;
 import co.haply.hphysics.*;
 import processing.core.*;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class GUI{
 
     private PApplet currentApp;
     private ControlP5 ui;
-    private Knob plateVelocity, ballVelocity, plateM, ballM;
+    private Knob knob_1, knob_2, knob_3, knob_4;
     private Button startButton, toggleHaptics, resetSensor;
     private PFont titleFont, contentFont, LevelTitleFont, questionsFont;
-    public Slider Impact_Slider;
+    private Slider Impact_Slider;
     private Textlabel SliderLabel, menuTitle, menuDesc;
 
     private FWorld world;
@@ -19,6 +19,7 @@ public class GUI{
     private FBox topBoundary, bottomBoundary, leftBoundary, rightBoundary, controlBackground, controlTop;
     private FBox menuRight, menuBottom;
 
+    private ArrayList<Knob> knobList;
     private float WORLD_WIDTH, WORLD_HEIGHT, BOUNDARY_SIZE;
     int currentLevel = 0;
     boolean isStart, isReset, isHapticsOn;
@@ -50,15 +51,15 @@ public class GUI{
         LevelTitleFont = currentApp.createFont("Arial Bold", 30f);
         questionsFont = currentApp.createFont("Arial", 15f);
 
-        plateVelocity = ui.addKnob("Plate Speed")
-                            .setRange(0,500)
+        knob_1 = ui.addKnob("Ball 1 Speed")
+                            .setRange(0,10)
                             .setValue(0)
                             .setPosition(100, 570)
                             .setRadius(50)
                             .setDragDirection(Knob.VERTICAL)
                             .hide();
   
-        plateM =  ui.addKnob("Plate Mass")
+        knob_2 =  ui.addKnob("Ball 1 Mass")
                             .setRange(1,10)
                             .setValue(0)
                             .setPosition(260, 570)
@@ -66,37 +67,43 @@ public class GUI{
                             .setDragDirection(Knob.VERTICAL)
                             .hide();
 
-        ballVelocity =  ui.addKnob("ball Speed")
-                            .setRange(0,500)
+        knob_3 =  ui.addKnob("Ball 2 Speed")
+                            .setRange(0,10)
                             .setValue(0)
                             .setPosition(420, 570)
                             .setRadius(50)
                             .setDragDirection(Knob.VERTICAL)
                             .hide();
         
-        ballM =  ui.addKnob("Ball Mass")
+        knob_4 =  ui.addKnob("Ball 2 Mass")
                             .setRange(1,10)
                             .setValue(0)
                             .setPosition(580, 570)
                             .setRadius(50)
                             .setDragDirection(Knob.VERTICAL)
                             .hide();   
+
+        knobList = new ArrayList();
+        knobList.add(knob_1);
+        knobList.add(knob_2);
+        knobList.add(knob_3);
+        knobList.add(knob_4);
                             
         Impact_Slider = ui.addSlider("Impact Force Slider")
-                             .setPosition(700,40)
-                             .setSize(30,150)
-                             .setRange(0,100)
-                             .setValue(0)
-                             .setColorValue(0x00000050)
-                             .hide(); 
+                            .setLabelVisible(false)
+                            .setPosition(630,580)
+                            .setSize(150,30)
+                            .setRange(0,100)
+                            .setValue(0)
+                            .setColorValue(0x000000ff)
+                            .hide(); 
                              
         SliderLabel = ui.addTextlabel("Impact Force (%)")
-                    .setText("Impact Force (%)")
-                    .setPosition(630,205)
-                     .setFont(contentFont)
-                    .setColorValue(0x00000050)
-                    .hide()
-                    ;  
+                            .setText("Impact Force (%)")
+                            .setPosition(635,630)
+                            .setFont(questionsFont)
+                            .setColorValue(0x000000ff)
+                            .hide();  
 
         startButton = ui.addButton("Start")
                             .setValue(0)
@@ -227,10 +234,10 @@ public class GUI{
     // add the methods for other levels here
     public void initCollisions(){
         initBackground();
-        plateVelocity.show();
-        ballVelocity.show();
-        plateM.show();
-        ballM.show();
+        knob_2.show();
+        knob_1.show();
+        knob_4.show();
+        knob_3.show();
 
         toggleHaptics.show();
         resetSensor.show();
@@ -238,9 +245,7 @@ public class GUI{
     
      public void initElasticCollisions(){
         initBackground();
-        ballVelocity.show();
-        plateM.show();
-        ballM.show();
+        showKnobs(3, true, "Mass of Effector", "Mass of Ball", "Velocity of Ball");
         Impact_Slider.show();
         SliderLabel.show();
         menuTitle.setText("Elastic Collisions").show();
@@ -250,9 +255,7 @@ public class GUI{
     
      public void initInelasticCollisions(){
         initBackground();
-        ballVelocity.show();
-        plateM.show();
-        ballM.show();
+        showKnobs(3, true, "Mass of Effector", "Mass of Ball",  "Velocity of Ball");
         Impact_Slider.show();
         SliderLabel.show();
         menuTitle.setText("Inelastic Collisions").show();
@@ -262,7 +265,7 @@ public class GUI{
     
      public void initGravity_single(){
         initBackground();
-        ballM.show();
+        showKnobs(2, false, "Mass of Effector", "Mass of Well");
         menuTitle.setText("Gravitational Forces").show();
         menuDesc.setText("Gravity is the universal force that "+
         "causes bodies to be drawn towards each other. It is what keeps you on the ground and causes objects to fall. "+
@@ -277,7 +280,7 @@ public class GUI{
     
     public void initGravity_triple(){
         initBackground();
-        ballM.show();
+        showKnobs(4, false, "Mass of Effector", "Mass of Well", "Mass of Well 2", "Mass of Well 3");
         menuTitle.setText("Gravitational Forces").show();
         menuDesc.setText("When there are multiple bodies in a system, the gravitational force between the bodies interacts "+
         "in a manner that is dependent on their mass and distance. Move the end effector around the screen and fell how the "+
@@ -293,6 +296,7 @@ public class GUI{
     public void initAllCollisions(){
         initBackground();
         // startButton.setLock(true);
+        showKnobs(4, false, "Mass of Effector", "Mass of Ball 1", "Mass of Ball 2", "Velocity of Ball 2");
 
         menuTitle.setText("Elastic and Inelastic").show();
 
@@ -391,22 +395,22 @@ public class GUI{
 
 
     // Setters
-    public void setPlateVelocity(float value){
-        plateVelocity.setValue(value);
+    public void setKnob_1(float value){
+        knob_1.setValue(value);
     }
-
-    public void setBallVelocity(float value){
-        ballVelocity.setValue(value);
+    public void setKnob_2(float value){
+        knob_2.setValue(value);
+    }    
+    public void setKnob_3(float value){
+        knob_3.setValue(value);
     }
-
-    public void setPlateMass(float value){
-        plateM.setValue(value);
+    public void setKnob_4(float value){
+        knob_4.setValue(value);
     }
-
-    public void setBallMass(float value){
-        ballM.setValue(value);
+    public void setImpactSlider(float value){
+        Impact_Slider.setValue(value);
     }
-
+    
     public void setIsReset(boolean rValue){
         isReset = rValue;
     }
@@ -421,22 +425,23 @@ public class GUI{
 
 
     //Getters
-    public float getPlateVelocity(){
-        return plateVelocity.getValue();
+    public float getKnob_1(){
+        return knob_1.getValue();
+    }
+    public float getKnob_2(){
+        return knob_2.getValue();
+    }   
+    public float getKnob_3(){
+        return knob_3.getValue();
+    }
+    public float getKnob_4(){
+        return knob_4.getValue();
+    }
+    public float getImpactSlider(){
+        return Impact_Slider.getValue();
     }
 
-    public float getBallVelocity(){
-        return ballVelocity.getValue();
-    }
-
-    public float getPlateMass(){
-        return plateM.getValue();
-    }
-
-    public float getBallMass(){
-        return ballM.getValue();
-    }
-
+    
     public FWorld getWorld(){
         return world;
     }
@@ -485,6 +490,16 @@ public class GUI{
             if(hapticSensor != null)
                 hapticSensor.h_avatar.setSensor(false);
         }   
+    }
+
+    private void showKnobs(float number, boolean isSliderPresent, String ...knobNames){
+        float initX = 100, spacing = 150;
+        if(isSliderPresent){
+            initX = 50;
+        }
+        for(int i=0; i< number; i++){
+            knobList.get(i).setPosition(initX + (i*spacing), 570).setLabel(knobNames[i]).show();
+        }
     }
     
 }
