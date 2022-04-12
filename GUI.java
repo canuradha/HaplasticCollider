@@ -25,7 +25,8 @@ public class GUI{
     int currentLevel = 0;
     private boolean isStart, isReset, isHapticsOn, isActive;
     
-    Q1 questions = new Q1();
+    CollisionQuestions questions = new CollisionQuestions();
+    GravityQuestions gravQue = new GravityQuestions();
     
     private int[] Answers;
 
@@ -52,8 +53,7 @@ public class GUI{
         titleFont = currentApp.createFont("Arial Bold",50f);
         contentFont = currentApp.createFont("Arial", 20f);
         LevelTitleFont = currentApp.createFont("Arial Bold", 30f);
-        questionsFont = currentApp.createFont("Arial", 13f);
-        isActive = true;
+        questionsFont = currentApp.createFont("Arial", 12f);
 
         knob_1 = ui.addKnob("Ball 1 Speed")
                             .setRange(0,10)
@@ -111,12 +111,12 @@ public class GUI{
 
         startButton = ui.addButton("Start")
                             .setValue(0)
-                            .setPosition( 1030, 600)
+                            .setPosition( 1030, 610)
                             .setSize(100,50)
                             .onRelease(nextCallback);
 
         toggleHaptics = ui.addButton("tHaply")
-                            .setPosition( 1030, 530)
+                            .setPosition( 1030, 540)
                             .setSize(100,50)
                             .setSwitch(true)
                             .setLabel("Haply OFF")
@@ -124,13 +124,11 @@ public class GUI{
                             .hide();
 
         resetSensor = ui.addButton("rSensor")
-                            .setPosition( 870, 530)
+                            .setPosition( 870, 540)
                             .setSize(100,50)
                             .setLabel("Reset Sensor")
                             .onRelease(resetCallback)
                             .hide();                         
-
-        ui.addListener(radioListener);
 
         menuTitle =  ui.addTextlabel("LevelTitle")
                         .setText("")
@@ -144,7 +142,7 @@ public class GUI{
                         .setMultiline(true)
                         .setText("")
                         .setSize(320, 400)
-                        .setPosition(850, 100)
+                        .setPosition(850, 90)
                         .setFont(questionsFont)
                         .setColorValue(0x00000060)
                         .hide();
@@ -216,7 +214,7 @@ public class GUI{
         
         ui.addTextlabel("welcomeContent")
             .setMultiline(true)
-            .setText("Hello and welcome to Haplastic Collider! The following modules aim to act as an experiential educational tool for teaching users the fundamentals of two essential physics concepts in an engaging way! This includes collisions and gravitational (attraction) forces. By understanding these foundational physics concepts, one can have easier future learning about complex topics such as electron scattering, which can give a better understanding of things like how X-Ray machines work, or electrostatic attraction, used in topics such as electrical engineering and advanced chemistry. Aside from academics, understanding collision and gravity can give more context for daily life. We experience these forces constantly in everyday life, whether its watching an apple fall from a tree like Isaac Newton or playing a game of pool or croquet. \n\nThe following modules use a haptics interface to allow you to feel the forces that would result from either a collision (impact) or gravity. This is done to allow you to feel the difference certain factors like mass and velocity make in the magnitude of these forces. To ensure the best experience, we highly reccomend you to play with the changeable variables, hold on to the Haply and have fun!")
+            .setText("Hello and welcome to Haplastic Collider! The following modules aim to act as an experiential educational tool for teaching users the fundamentals of two essential physics concepts in an engaging way! This includes collisions antoggleActive(true); everyday life, whether its watching an apple fall from a tree like Isaac Newton or playing a game of pool or croquet. \n\nThe following modules use a haptics interface to allow you to feel the forces that would result from either a collision (impact) or gravity. This is done to allow you to feel the difference certain factors like mass and velocity make in the magnitude of these forces. To ensure the best experience, we highly reccomend  you to play with the changeable variables, hold on to the Haply and have fun!")
             .setSize(800, 500)
             .setPosition(200, 200)
             .setFont(contentFont)
@@ -289,10 +287,25 @@ public class GUI{
         menuDesc.setText("When there are multiple bodies in a system, the gravitational force between the bodies interacts "+
         "in a manner that is dependent on their mass and distance. Move the end effector around the screen and fell how the "+
         "direction of force changes based on your proximity to the different bodies. When you are ready, answer the questions "+
-        "below to test your understanding. ").show();
+        "below to test your understanding. ").setSize(330, 150).setPosition(850, 60).show();
+
+        int posX = 850;
+        int posY = 150;   
+        toggleActive(false);
+
+        for(int i = 0; i < gravQue.getQuestions().size() ; i++){
+            addQuestion(
+                gravQue.getQuestions().get(i)[0], 
+                gravQue.getQuestions().get(i)[1], 
+                posX, 
+                posY + i*100,
+                Arrays.copyOfRange(gravQue.getQuestions().get(i), 2, gravQue.getQuestions().get(i).length) 
+            );
+        }  
+        Answers = new int[gravQue.getAnswers().length];  
         //String[] ans = {"Decreased to half its initial value\n", "Increased to twice its initial value\n", 
         //"Increased to four times its initial value\n", "The gravitational force remains unchanged"};
-        //addQuestion("Q1", 
+        //addQuestion("CollisionQuestions", 
         //"If the distance between Earth and the moon is doubled, with no change in mass, the gravitational force of attraction is:",
         //850,400, ans);
     }
@@ -300,7 +313,7 @@ public class GUI{
     public void initAllCollisions(){
         initBackground();
         showKnobs(4, false, "Mass of Effector", "Mass of Ball 1", "Mass of Ball 2", "Velocity of Ball 2");
-        toggleActive();
+        toggleActive(false);
         menuTitle.setText("Elastic and Inelastic").show();
 
             
@@ -318,7 +331,7 @@ public class GUI{
             );
         }  
         Answers = new int[questions.getAnswers().length];  
-            
+        ui.addListener(radioListener);
      }
     
     public void initSandbox(){
@@ -326,13 +339,13 @@ public class GUI{
         // startButton.setLock(true);
 
         menuTitle.setText("Sandbox").show() ;
+        toggleActive(false);
     }
 
     // Button Listeners
     private CallbackListener nextCallback = new CallbackListener(){
         public void controlEvent(CallbackEvent event) {
-            System.out.println(isActive);
-            if(isActive && currentLevel < 6){
+            if(currentLevel < 6){
                 for(ControllerInterface<?>  t: ui.getAll()){
                     if(!t.getName().equals("Start")){
                         t.hide();
@@ -340,7 +353,7 @@ public class GUI{
                 }
                 if(currentLevel == 0){
                     event.getController().setLabel("Next");
-                }else if(currentLevel == 3)
+                }
 
                 switchHaptics(true);
                 toggleHaptics.show();
@@ -372,12 +385,14 @@ public class GUI{
             if(event.isGroup()){
                 // switch(event.getName())
                 Answers[Integer.parseInt(event.getGroup().getName().split("_")[1]) - 1] = (int) event.getGroup().getValue();
+                if(currentLevel == 3 && Arrays.equals(Answers, questions.getAnswers())){
+                    toggleActive(true);
+                }else if(currentLevel == 5 && Arrays.equals(Answers, gravQue.getAnswers())){
+                    toggleActive(true);
+                }else {
+                    toggleActive(false);
+                }
             }
-
-            if(Arrays.equals(Answers, questions.getAnswers())){
-                toggleActive();
-            }
-                
         }
     };
 
@@ -385,18 +400,19 @@ public class GUI{
     // questions
     private void addQuestion(String label, String qText, int posX, int posY, String [] answers){
         // System.out.println(qText.length());
-        int ansLineSpace = qText.length() > 205 ? 75 : 65;
+        int ansLineSpace = qText.length() > 205 ? 65 : 55;
         ui.addTextlabel(label)
             .setMultiline(true)
             .setValue(qText)
-            .setSize(300, ansLineSpace)
+            .setSize(320, ansLineSpace)
             .setPosition(posX, posY)
             .setFont(questionsFont)
+            // .setColorBackground(0x33565656)
             .setColorValue(0x00000060);
 
         RadioButton temp  = ui.addRadioButton(label+"_Ans")
             .setItemsPerRow(2)
-            .setSpacingColumn(300/2 + 10)
+            .setSpacingColumn(320/2 + 10)
             .setSpacingRow(5)
             .setPosition(posX + 10, posY + ansLineSpace);
         
@@ -516,17 +532,16 @@ public class GUI{
         }
     }
 
-    private void toggleActive(){
+    private void toggleActive(boolean isActive){
         if(isActive){
-            // startButton.setColorForeground(0xffaaaaaa);
-            // startButton.setColorBackground(0xffaaaaaa);
-            startButton.hide();
-        }else{
             // startButton.setColorForeground(0xff1e90ff);
             // startButton.setColorBackground(0xff191950);
-            startButton.show();
+            this.startButton.show();
+        }else{
+            // startButton.setColorForeground(0xffaaaaaa);
+            // startButton.setColorBackground(0xffaaaaaa);
+            this.startButton.hide();
         }
-        isActive = !isActive;
     }
     
 }
