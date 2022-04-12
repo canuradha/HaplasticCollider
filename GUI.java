@@ -1,6 +1,7 @@
 import controlP5.*;
 import co.haply.hphysics.*;
 import processing.core.*;
+import processing.core.PGraphics;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -22,9 +23,11 @@ public class GUI{
     private ArrayList<Knob> knobList;
     private float WORLD_WIDTH, WORLD_HEIGHT, BOUNDARY_SIZE;
     int currentLevel = 0;
-    boolean isStart, isReset, isHapticsOn;
+    private boolean isStart, isReset, isHapticsOn, isActive;
     
     Q1 questions = new Q1();
+    
+    private int[] Answers;
 
 
     public GUI(final processing.core.PApplet applet){
@@ -49,7 +52,8 @@ public class GUI{
         titleFont = currentApp.createFont("Arial Bold",50f);
         contentFont = currentApp.createFont("Arial", 20f);
         LevelTitleFont = currentApp.createFont("Arial Bold", 30f);
-        questionsFont = currentApp.createFont("Arial", 15f);
+        questionsFont = currentApp.createFont("Arial", 13f);
+        isActive = true;
 
         knob_1 = ui.addKnob("Ball 1 Speed")
                             .setRange(0,10)
@@ -295,25 +299,26 @@ public class GUI{
 
     public void initAllCollisions(){
         initBackground();
-        // startButton.setLock(true);
         showKnobs(4, false, "Mass of Effector", "Mass of Ball 1", "Mass of Ball 2", "Velocity of Ball 2");
-
+        toggleActive();
         menuTitle.setText("Elastic and Inelastic").show();
 
             
-            int posX = 850;
-            int posY = 100;   
+        int posX = 850;
+        int posY = 90;   
 
 
-            for(int i = 0; i < questions.getQuestions().size() ; i++){
-                addQuestion(
-                    questions.getQuestions().get(i)[0], 
-                    questions.getQuestions().get(i)[1], 
-                    posX, 
-                    posY + i*50,
-                    Arrays.copyOfRange(questions.getQuestions().get(i), 2, questions.getQuestions().get(i).length) 
-                );
-            }         
+        for(int i = 0; i < questions.getQuestions().size() ; i++){
+            addQuestion(
+                questions.getQuestions().get(i)[0], 
+                questions.getQuestions().get(i)[1], 
+                posX, 
+                posY + i*105,
+                Arrays.copyOfRange(questions.getQuestions().get(i), 2, questions.getQuestions().get(i).length) 
+            );
+        }  
+        Answers = new int[questions.getAnswers().length];  
+            
      }
     
     public void initSandbox(){
@@ -326,7 +331,8 @@ public class GUI{
     // Button Listeners
     private CallbackListener nextCallback = new CallbackListener(){
         public void controlEvent(CallbackEvent event) {
-            if(currentLevel < 6){
+            System.out.println(isActive);
+            if(isActive && currentLevel < 6){
                 for(ControllerInterface<?>  t: ui.getAll()){
                     if(!t.getName().equals("Start")){
                         t.hide();
@@ -334,7 +340,7 @@ public class GUI{
                 }
                 if(currentLevel == 0){
                     event.getController().setLabel("Next");
-                }
+                }else if(currentLevel == 3)
 
                 switchHaptics(true);
                 toggleHaptics.show();
@@ -365,26 +371,34 @@ public class GUI{
         public void controlEvent(ControlEvent event){
             if(event.isGroup()){
                 // switch(event.getName())
-                System.out.println(event.getGroup().getName());
+                Answers[Integer.parseInt(event.getGroup().getName().split("_")[1]) - 1] = (int) event.getGroup().getValue();
             }
+
+            if(Arrays.equals(Answers, questions.getAnswers())){
+                toggleActive();
+            }
+                
         }
     };
 
 
     // questions
     private void addQuestion(String label, String qText, int posX, int posY, String [] answers){
+        // System.out.println(qText.length());
+        int ansLineSpace = qText.length() > 205 ? 75 : 65;
         ui.addTextlabel(label)
             .setMultiline(true)
-            .setText(qText)
-            .setSize(350, 20)
+            .setValue(qText)
+            .setSize(300, ansLineSpace)
             .setPosition(posX, posY)
             .setFont(questionsFont)
             .setColorValue(0x00000060);
 
-        RadioButton temp  = ui.addRadioButton(label+"Ans")
-            .setItemsPerRow(answers.length)
-            .setSpacingColumn(300/answers.length)
-            .setPosition(posX, posY + 30);
+        RadioButton temp  = ui.addRadioButton(label+"_Ans")
+            .setItemsPerRow(2)
+            .setSpacingColumn(300/2 + 10)
+            .setSpacingRow(5)
+            .setPosition(posX + 10, posY + ansLineSpace);
         
         for(int i=0; i< answers.length; i++){
             temp.addItem(answers[i], i+1);
@@ -500,6 +514,19 @@ public class GUI{
         for(int i=0; i< number; i++){
             knobList.get(i).setPosition(initX + (i*spacing), 570).setLabel(knobNames[i]).show();
         }
+    }
+
+    private void toggleActive(){
+        if(isActive){
+            // startButton.setColorForeground(0xffaaaaaa);
+            // startButton.setColorBackground(0xffaaaaaa);
+            startButton.hide();
+        }else{
+            // startButton.setColorForeground(0xff1e90ff);
+            // startButton.setColorBackground(0xff191950);
+            startButton.show();
+        }
+        isActive = !isActive;
     }
     
 }
