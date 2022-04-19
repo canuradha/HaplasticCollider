@@ -13,10 +13,12 @@ float pixelsPerMeter = 10.0;
 
 //Graphics
 PImage asteroid;
+PImage planet;
 PImage gravwell_s;
 PImage gravwell_m;
 PImage gravwell_l;
 PImage gravwell_single;
+PImage backgroundpic;
 
 
 // Haply Initializatons
@@ -62,6 +64,12 @@ float ballRadius = 1;
 float ballMass = 250;
 float ballMassFactor = 1;
 boolean isBallVelocityChanged = false;
+
+
+float MIN_BALL_SIZE = ballRadius;
+float MAX_BALL_SIZE = 10*ballRadius;
+float MAX_WELL_SIZE = 15 * ballRadius;
+float MAX_VELOCITY = 150.0;
 
 
 // other variables
@@ -132,7 +140,7 @@ float gravforce_totx, gravforce_toty = 0;
   float KEx_loss;
   float KEy_loss;
   
-  double Perc;
+  double perc;
 
 void initHaply(){
   // println(Serial.list()[0]);
@@ -164,7 +172,7 @@ void addSensor(){
 
 FCircle initBall(float radius, float x, float y, float ballFriction, boolean isHaptic){
   FCircle tempBall = new FCircle(radius);
-  tempBall.setPosition(WORLD_WIDTH/4, WORLD_HEIGHT/2); //Should this be X and Y
+  tempBall.setPosition(x, y); //Should this be X and Y
   tempBall.setFill(0, 0, 150);
   tempBall.setHaptic(isHaptic);
   tempBall.setRestitution(1);
@@ -214,10 +222,13 @@ void setup() {
   // basePlate = initBox(BOUNDARY_SIZE, BOUNDARY_SIZE * 5, platePositionX, platePositionY, false);
  
   asteroid = loadImage("asteroid.png");
+  planet = loadImage("planet.png");
   gravwell_single = loadImage("GravWell.png");
   gravwell_l = loadImage("GravWell.png");
   gravwell_m = loadImage("GravWell.png");
   gravwell_s = loadImage("GravWell.png");
+  backgroundpic = loadImage("backgroundpic.png");
+        
  
   //Initialization of balls for Modules 1 and 2
   bouncey_ball_1 = initBall(4* ballRadius, WORLD_WIDTH/2, WORLD_HEIGHT/2, 0.0f, false);
@@ -274,11 +285,17 @@ void draw(){
   //}
   if(ui.getIsStart()){
     world =ui.getWorld();
+    backgroundpic.resize((int) (pixelsPerMeter*ui.worldBackground.getWidth()), (int) (pixelsPerMeter*ui.worldBackground.getHeight()));
+    ui.worldBackground.attachImage(backgroundpic);
 
     switch(ui.getCurrentLevel()){
       case 1:
         ui.initElasticCollisions();
         world.add(bouncey_ball_1);
+        planet.resize((int) (pixelsPerMeter*bouncey_ball_1.getSize()), (int) (pixelsPerMeter*bouncey_ball_1.getSize()));
+        bouncey_ball_1.attachImage(planet);
+        ui.setKnob_2(bouncey_ball_1.getSize());
+        ui.setKnob_3(reScale((float)Math.sqrt(Math.pow(bouncey_ball_1.getVelocityX(),2)+ Math.pow(bouncey_ball_1.getVelocityY(), 2)), MAX_VELOCITY, 0, 10));
         addSensor();
         println("Second level");
         break;
@@ -288,6 +305,7 @@ void draw(){
         asteroid.resize((int) (pixelsPerMeter*bouncey_ball_2.getSize()), (int) (pixelsPerMeter*bouncey_ball_2.getSize()));
         bouncey_ball_2.attachImage(asteroid);
         world.add(bouncey_ball_2);
+        ui.setKnob_2(bouncey_ball_2.getSize());
         addSensor();
         println("Third level");
         break;
@@ -296,6 +314,8 @@ void draw(){
         ui.initAllCollisions();
         world.add(bouncey_ball_1);
         world.add(bouncey_ball_2);
+        ui.setKnob_2(bouncey_ball_1.getSize());
+        ui.setKnob_3(bouncey_ball_2.getSize());
         addSensor();
         break;
       
@@ -303,6 +323,7 @@ void draw(){
         ui.initGravity_single();   
         addSensor();
         world.add(well_single);
+        ui.setKnob_2(reScale(well_single.getSize(), 15, 0, 10));
         //world.add(arrow_line);
         // world.add(well_medium);
         // world.add(well_small);
@@ -316,6 +337,9 @@ void draw(){
         world.add(well_large);
         world.add(well_medium);
         world.add(well_small);
+        ui.setKnob_2(reScale(well_large.getSize(), 15, 0, 10));
+        ui.setKnob_3(reScale(well_medium.getSize(), 15, 0, 10));
+        ui.setKnob_4(reScale(well_small.getSize(), 15, 0, 10));
         //arrow(xE, yE, fEE.x, fEE.y);
         //line(200, 100, 600, 400);
         break;
@@ -378,9 +402,9 @@ class SimulationThread implements Runnable{
       
     }
 
-    //Adjust the UI controls
-    ui.setPlateVelocity((float) Math.sqrt(Math.pow(plateVelocityX, 2) + Math.pow(plateVelocityY, 2)));
-    ui.setBallVelocity((float) Math.sqrt(Math.pow(ballVelocityX, 2) + Math.pow(ballVelocityY, 2)));
+    // //Adjust the UI controls
+    // ui.setKnob_1((float) Math.sqrt(Math.pow(plateVelocityX, 2) + Math.pow(plateVelocityY, 2)));
+    // ui.setKnob_2((float) Math.sqrt(Math.pow(ballVelocityX, 2) + Math.pow(ballVelocityY, 2)));
     
     if(sensor != null){
       sensor.h_avatar.setDamping(dampingForce);
@@ -454,96 +478,121 @@ class SimulationThread implements Runnable{
 
 
 void keyPressed(){
-  if(key == CODED){
-    if(keyCode == UP){
-      plateVelocityY -= 50;
-    }else if(keyCode == DOWN){
-      plateVelocityY += 50;
-    }else if(keyCode == LEFT){
-      plateVelocityX -= 50;
-    }else if(keyCode == RIGHT){
-      plateVelocityX += 50;
-    }
-  }else{
-    switch (key) {
-      case 'q':
-         ui.setPlateVelocity( ui.getPlateVelocity() - 10);
-        if( ui.getPlateVelocity() == 0){
-          basePlate.setVelocity(0,0);
-        }else{
-          plateVelocityX = Math.signum(plateVelocityX) * (Math.abs(plateVelocityX) - 10);
-          plateVelocityY = Math.signum(plateVelocityY) * (Math.abs(plateVelocityY) - 10);
-        }
-        isPlateVelocityChanged = true;
-        break;
-      case 'w':
-         ui.setPlateVelocity( ui.getPlateVelocity() + 10);
-        if( ui.getPlateVelocity() < 500){
-          plateVelocityX = Math.signum(plateVelocityX) * (Math.abs(plateVelocityX) + 10);
-          plateVelocityY = Math.signum(plateVelocityY) * (Math.abs(plateVelocityY) + 10);
-        }
-        isPlateVelocityChanged = true;
-        break;
-      case 'e':
-        ui.setPlateMass(ui.getPlateMass()- 1);
-        if(plateMassFactor > 1){
-          basePlate.setWidth(basePlate.getWidth() - (plateMassFactor/10));
-          basePlate.setHeight(basePlate.getHeight() - (plateMassFactor/10));
-          plateMassFactor--;
-        }       
-        break;
-      case 'r':
-        ui.setPlateMass(ui.getPlateMass() + 1);
-        if(plateMassFactor < 10){
-          plateMassFactor++;
-          basePlate.setWidth(basePlate.getWidth() + (plateMassFactor/10));
-          basePlate.setHeight(basePlate.getHeight() + (plateMassFactor/10));
-        }         
-        break;
-      case 'u':
-        ui.setBallVelocity(ui.getBallVelocity() - 10);
-        if(ui.getBallVelocity() == 0){
-          ball.setVelocity(0,0);
-        }else{
-          ballVelocityX = Math.signum(ballVelocityX) * (Math.abs(ballVelocityX) - 10);
-          ballVelocityY = Math.signum(ballVelocityY) * (Math.abs(ballVelocityY) - 10);
-        }
-        isBallVelocityChanged = true;
-        break;
-      case 'i':
-        ui.setBallVelocity(ui.getBallVelocity() + 10);
-        if(ui.getBallVelocity() < 500){
-          ballVelocityX = Math.signum(ballVelocityX) * (Math.abs(ballVelocityX) + 10);
-          ballVelocityY = Math.signum(ballVelocityY) * (Math.abs(ballVelocityY) + 10);
-        }
-        isBallVelocityChanged = true;
-        break;
-      case 'o':
-        ui.setBallMass(ui.getBallMass() - 1);
-        if(ballMassFactor > 1){
-          ball.setSize(ball.getSize() - (ballMassFactor/10));
-          ballMassFactor--;
-        }       
-        break;
-      case 'p':
-        ui.setBallMass(ui.getBallMass() + 1);
-        if(ballMassFactor < 10){
-          ballMassFactor++;
-          ball.setSize(ball.getSize() + (ballMassFactor/10));
-        }  
-        break;
-    }
-    if(isPlateVelocityChanged){
-      basePlate.setDensity((plateMass * plateMassFactor) / basePlate.getWidth() * basePlate.getHeight());
-      isPlateVelocityChanged = false;
-    }
-      
-    if(isBallVelocityChanged){
-      ball.setDensity((float) ((ballMass * ballMassFactor)/ Math.PI * Math.pow(ballRadius , 2)));
-      isBallVelocityChanged = false;
-    }
+  int currentLevel = ui.getCurrentLevel();
+  switch (key){
+    // mass of the effector change
+    case 'q':
+      if(sensor != null && sensor.h_avatar.getSize() < MAX_BALL_SIZE){
+        sensor.h_avatar.setDensity(sensor.h_avatar.getDensity() + 10);
+        ui.setKnob_1(constrain(sensor.h_avatar.getDensity() + 10, 0, 10));
+      }
+      break;
+    case 'a':
+      if(sensor != null && sensor.h_avatar.getSize() > MIN_BALL_SIZE){
+        sensor.h_avatar.setDensity(sensor.h_avatar.getDensity() - 10);
+        ui.setKnob_1(constrain(sensor.h_avatar.getDensity() - 10, 0, 10));
+      }        
+      break;
+    // other changes
+    case 'w':
+      if((currentLevel == 1 || currentLevel == 3 || currentLevel == 6) && bouncey_ball_1.getSize() < MAX_BALL_SIZE){
+        bouncey_ball_1.setSize(bouncey_ball_1.getSize() + 0.5);
+        ui.setKnob_2(bouncey_ball_1.getSize());
+      }else if (currentLevel == 2 && bouncey_ball_2.getSize() < MAX_BALL_SIZE){
+        bouncey_ball_2.setSize(bouncey_ball_2.getSize() + 0.5);
+        ui.setKnob_2(constrain(bouncey_ball_2.getSize(), 0, 10));
+        asteroid.resize((int) (pixelsPerMeter*bouncey_ball_2.getSize()), (int) (pixelsPerMeter*bouncey_ball_2.getSize()));
+      }else if(currentLevel == 4 && well_single.getSize() < MAX_WELL_SIZE){
+        well_single.setSize(well_single.getSize() + 0.5);
+        ui.setKnob_2(reScale(well_single.getSize(), 15, 0, 10));
+        gravwell_single.resize((int) (pixelsPerMeter*well_single.getSize()), (int) (pixelsPerMeter*well_single.getSize()));
+      }else if (currentLevel == 5 && well_large.getSize() < MAX_WELL_SIZE){
+        well_large.setSize(well_large.getSize() + 0.5);
+        ui.setKnob_2(reScale(well_large.getSize(), 15, 0, 10));
+        gravwell_l.resize((int) (pixelsPerMeter*well_large.getSize()), (int) (pixelsPerMeter*well_large.getSize()));
+      }
+      break;
+    case 's':
+      if((currentLevel == 1 || currentLevel == 3 || currentLevel == 6) && bouncey_ball_1.getSize() > MIN_BALL_SIZE){
+        bouncey_ball_1.setSize(bouncey_ball_1.getSize() - 0.5);
+        ui.setKnob_2(constrain(bouncey_ball_1.getSize(), 0, 10));
+      }else if (currentLevel == 2 && bouncey_ball_2.getSize() > MIN_BALL_SIZE){
+        bouncey_ball_2.setSize(bouncey_ball_2.getSize() - 0.5);
+        ui.setKnob_2(constrain(bouncey_ball_2.getSize(), 0, 10));
+        asteroid.resize((int) (pixelsPerMeter*bouncey_ball_2.getSize()), (int) (pixelsPerMeter*bouncey_ball_2.getSize()));
+      }else if(currentLevel == 4 && well_single.getSize() > MIN_BALL_SIZE){
+        well_single.setSize(well_single.getSize() - 0.5);
+        ui.setKnob_2(reScale(well_single.getSize(), 15, 0, 10));
+        gravwell_single.resize((int) (pixelsPerMeter*well_single.getSize()), (int) (pixelsPerMeter*well_single.getSize()));
+      }else if (currentLevel == 5 && well_large.getSize() > MIN_BALL_SIZE){
+        well_large.setSize(well_large.getSize() - 0.5);
+        ui.setKnob_2(reScale(well_large.getSize(), 15, 0, 10));
+        gravwell_l.resize((int) (pixelsPerMeter*well_large.getSize()), (int) (pixelsPerMeter*well_large.getSize()));
+      }
+      break;
+    case 'e':
+      if(currentLevel == 1){
+        // 10% increase
+        bouncey_ball_1.setVelocity(bouncey_ball_1.getVelocityX() * 1.1, bouncey_ball_1.getVelocityY() * 1.1);
+        ui.setKnob_3(reScale((float)Math.sqrt(Math.pow(bouncey_ball_1.getVelocityX(),2)+ Math.pow(bouncey_ball_1.getVelocityY(), 2)), 150, 0, 10));
+      }else if(currentLevel == 2){
+        bouncey_ball_2.setVelocity(bouncey_ball_2.getVelocityX() * 1.1, bouncey_ball_2.getVelocityY() * 1.1);
+        ui.setKnob_3(reScale((float)Math.sqrt(Math.pow(bouncey_ball_2.getVelocityX(),2)+ Math.pow(bouncey_ball_2.getVelocityY(), 2)), 150, 0, 10));
+      }else if (currentLevel == 3 && bouncey_ball_1.getSize() < MAX_WELL_SIZE){
+        bouncey_ball_2.setSize(bouncey_ball_2.getSize() + 0.5);
+        ui.setKnob_3(constrain(bouncey_ball_2.getSize(), 0, 10));
+        asteroid.resize((int) (pixelsPerMeter*bouncey_ball_2.getSize()), (int) (pixelsPerMeter*bouncey_ball_2.getSize()));
+      }else if (currentLevel >= 5 && well_medium.getSize() < MAX_WELL_SIZE){
+        well_medium.setSize(well_medium.getSize() + 0.5);
+        ui.setKnob_3(reScale(well_medium.getSize(), 15, 0, 10));
+        gravwell_m.resize((int) (pixelsPerMeter*well_medium.getSize()), (int) (pixelsPerMeter*well_medium.getSize()));
+      }
+      break;
+    case 'd':
+      if(currentLevel == 1){
+        // 10% decrease
+        bouncey_ball_1.setVelocity(bouncey_ball_1.getVelocityX() * 0.9, bouncey_ball_1.getVelocityY() * 0.9);
+        ui.setKnob_3(reScale((float)Math.sqrt(Math.pow(bouncey_ball_1.getVelocityX(),2)+ Math.pow(bouncey_ball_1.getVelocityY(), 2)), 150, 0, 10));
+      }else if(currentLevel == 2){
+        bouncey_ball_2.setVelocity(bouncey_ball_2.getVelocityX() * 0.9, bouncey_ball_2.getVelocityY() * 0.9);
+        ui.setKnob_3(reScale((float)Math.sqrt(Math.pow(bouncey_ball_2.getVelocityX(),2)+ Math.pow(bouncey_ball_2.getVelocityY(), 2)), 150, 0, 10));
+      }else if (currentLevel == 3 && bouncey_ball_1.getSize() > MIN_BALL_SIZE){
+        bouncey_ball_2.setSize(bouncey_ball_2.getSize() - 0.5);
+        ui.setKnob_3(constrain(bouncey_ball_2.getSize(), 0, 10));
+        asteroid.resize((int) (pixelsPerMeter*bouncey_ball_2.getSize()), (int) (pixelsPerMeter*bouncey_ball_2.getSize()));
+      }else if (currentLevel >= 5 && well_medium.getSize() > MIN_BALL_SIZE){
+        well_medium.setSize(well_medium.getSize() - 0.5);
+        ui.setKnob_3(reScale(well_medium.getSize(), 15, 0, 10));
+        gravwell_m.resize((int) (pixelsPerMeter*well_medium.getSize()), (int) (pixelsPerMeter*well_medium.getSize()));
+      }
+    break;
+    case 'r':
+      if(currentLevel >= 5 && well_small.getSize() < MAX_WELL_SIZE){
+        well_small.setSize(well_small.getSize() + 0.5);
+        ui.setKnob_4(reScale(well_small.getSize(), 15, 0, 10));
+        gravwell_s.resize((int) (pixelsPerMeter*well_small.getSize()), (int) (pixelsPerMeter*well_small.getSize()));
+      }
+    break;
+     case 'f':
+      if(currentLevel >= 5 && well_small.getSize() > MIN_BALL_SIZE){
+        well_small.setSize(well_small.getSize() - 0.5);
+        ui.setKnob_4(reScale(well_small.getSize(), 15, 0, 10));
+        gravwell_s.resize((int) (pixelsPerMeter*well_small.getSize()), (int) (pixelsPerMeter*well_small.getSize()));
+      }
+    break;
   }
-  
+  // if(key == CODED){
+  //   if(keyCode == UP){
+  //     plateVelocityY -= 50;
+  //   }else if(keyCode == DOWN){
+  //     plateVelocityY += 50;
+  //   }else if(keyCode == LEFT){
+  //     plateVelocityX -= 50;
+  //   }else if(keyCode == RIGHT){
+  //     plateVelocityX += 50;
+  //   }
+  // }
+ 
 }
 
 void contactStarted(FContact c){ //Called on contact between any 2 objects
@@ -569,7 +618,7 @@ void contactStarted(FContact c){ //Called on contact between any 2 objects
     }
   }
   
-
+  // println(body1.getVelocityX() + " , " + body2.getVelocityX() );
   fEE.div(dampingScale);
   torques.set(widgetOne.set_device_torques(fEE.array()));
   widgetOne.device_write_torques();
@@ -612,16 +661,14 @@ void commit_elastic_results (FContact c, FBody body1, FBody body2){ //Elastic co
  
   //Determine change in slider based on percent of max speed (set as 50 in X, 50 in Y)
   if (body1 == bouncey_ball_1){
-    Perc =  Math.sqrt(v1x_f*v1x_f + v1y_f*v1y_f)/Math.sqrt(50*50 + 50*50);
+    perc =  Math.sqrt(v1x_f*v1x_f + v1y_f*v1y_f)/Math.sqrt(50*50 + 50*50);
+  }else if (body2 == bouncey_ball_1){
+    perc =  Math.sqrt(v2x_f*v2x_f + v2y_f*v2y_f)/Math.sqrt(50*50 + 50*50);
   }
-  
-   else if (body2 == bouncey_ball_1){
-    Perc =  Math.sqrt(v2x_f*v2x_f + v2y_f*v2y_f)/Math.sqrt(50*50 + 50*50);
-  }
-  
-  Perc = constrain((float) Perc,0,1);
-  ui.Impact_Slider.setValue((float) Perc*100); //update slider
-  double D = 20* (float) Perc;
+  ui.setKnob_3(reScale((float) perc, 100,0,10));
+  perc = constrain((float) perc,0,1);
+  ui.setImpactSlider((float) perc*100); //update slider
+  double D = 20* (float) perc;
   delay((int) D);
 
   
@@ -666,16 +713,14 @@ void commit_inelastic_results (FContact c, FBody body1, FBody body2, float KE_lo
   
   
   if (body1 == bouncey_ball_2){
-    Perc =  Math.sqrt(v1x_f*v1x_f + v1y_f*v1y_f)/Math.sqrt(50*50 + 50*50);
+    perc =  Math.sqrt(v1x_f*v1x_f + v1y_f*v1y_f)/Math.sqrt(50*50 + 50*50);
+  }else if (body2 == bouncey_ball_2){
+    perc =  Math.sqrt(v2x_f*v2x_f + v2y_f*v2y_f)/Math.sqrt(50*50 + 50*50);
   }
   
-   else if (body2 == bouncey_ball_2){
-    Perc =  Math.sqrt(v2x_f*v2x_f + v2y_f*v2y_f)/Math.sqrt(50*50 + 50*50);
-  }
-  
-  
-  ui.Impact_Slider.setValue((float) Perc*100);
-   double D = 20* (float) Perc;
+  ui.setKnob_3((float)Math.sqrt(bouncey_ball_2.getVelocityX()*bouncey_ball_2.getVelocityX() + bouncey_ball_2.getVelocityY()*bouncey_ball_2.getVelocityY())); //changed
+  ui.setImpactSlider((float) perc*100);
+  double D = 20* (float) perc;
   delay((int) D);
   
   bouncey_ball_2.setSize(bouncey_ball_2.getSize()*0.95);
@@ -725,4 +770,8 @@ void arrow(float x1, float y1, float x2, float y2){
   line(0, 0, -10, -10);
   line(0, 0, 10, -10);
   popMatrix();
+}
+
+float reScale(float value, float maxValue, int minScale, int maxScale){
+  return (value/maxValue) * (maxScale - minScale);
 }

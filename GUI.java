@@ -1,29 +1,38 @@
 import controlP5.*;
 import co.haply.hphysics.*;
 import processing.core.*;
-import java.util.List;
+import processing.core.PGraphics;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class GUI{
 
+    float pixelsPerMeter = 10.0f;
     private PApplet currentApp;
     private ControlP5 ui;
-    private Knob plateVelocity, ballVelocity, plateM, ballM;
+    private Knob knob_1, knob_2, knob_3, knob_4;
     private Button startButton, toggleHaptics, resetSensor;
     private PFont titleFont, contentFont, LevelTitleFont, questionsFont;
-    public Slider Impact_Slider;
+    private Slider Impact_Slider;
     private Textlabel SliderLabel, menuTitle, menuDesc;
 
     private FWorld world;
     private HVirtualCoupling hapticSensor;
     private FBox topBoundary, bottomBoundary, leftBoundary, rightBoundary, controlBackground, controlTop;
+    FBox worldBackground;
     private FBox menuRight, menuBottom;
+    PImage backgroundpic;
+    
 
+    private ArrayList<Knob> knobList;
     private float WORLD_WIDTH, WORLD_HEIGHT, BOUNDARY_SIZE;
     int currentLevel = 0;
-    boolean isStart, isReset, isHapticsOn;
+    private boolean isStart, isReset, isHapticsOn, isActive;
     
-    Q1 questions = new Q1();
+    CollisionQuestions questions = new CollisionQuestions();
+    GravityQuestions gravQue = new GravityQuestions();
+    
+    private int[] Answers;
 
 
     public GUI(final processing.core.PApplet applet){
@@ -48,17 +57,17 @@ public class GUI{
         titleFont = currentApp.createFont("Arial Bold",50f);
         contentFont = currentApp.createFont("Arial", 20f);
         LevelTitleFont = currentApp.createFont("Arial Bold", 30f);
-        questionsFont = currentApp.createFont("Arial", 15f);
+        questionsFont = currentApp.createFont("Arial", 12f);
 
-        plateVelocity = ui.addKnob("Plate Speed")
-                            .setRange(0,500)
+        knob_1 = ui.addKnob("Ball 1 Speed")
+                            .setRange(0,10)
                             .setValue(0)
                             .setPosition(100, 570)
                             .setRadius(50)
                             .setDragDirection(Knob.VERTICAL)
                             .hide();
   
-        plateM =  ui.addKnob("Plate Mass")
+        knob_2 =  ui.addKnob("Ball 1 Mass")
                             .setRange(1,10)
                             .setValue(0)
                             .setPosition(260, 570)
@@ -66,46 +75,52 @@ public class GUI{
                             .setDragDirection(Knob.VERTICAL)
                             .hide();
 
-        ballVelocity =  ui.addKnob("ball Speed")
-                            .setRange(0,500)
+        knob_3 =  ui.addKnob("Ball 2 Speed")
+                            .setRange(0,50)
                             .setValue(0)
                             .setPosition(420, 570)
                             .setRadius(50)
                             .setDragDirection(Knob.VERTICAL)
                             .hide();
         
-        ballM =  ui.addKnob("Ball Mass")
+        knob_4 =  ui.addKnob("Ball 2 Mass")
                             .setRange(1,10)
                             .setValue(0)
                             .setPosition(580, 570)
                             .setRadius(50)
                             .setDragDirection(Knob.VERTICAL)
                             .hide();   
+
+        knobList = new ArrayList();
+        knobList.add(knob_1);
+        knobList.add(knob_2);
+        knobList.add(knob_3);
+        knobList.add(knob_4);
                             
         Impact_Slider = ui.addSlider("Impact Force Slider")
-                             .setPosition(700,40)
-                             .setSize(30,150)
-                             .setRange(0,100)
-                             .setValue(0)
-                             .setColorValue(0x00000050)
-                             .hide(); 
+                            .setLabelVisible(false)
+                            .setPosition(630,580)
+                            .setSize(150,30)
+                            .setRange(0,100)
+                            .setValue(0)
+                            .setColorValue(0x000000ff)
+                            .hide(); 
                              
         SliderLabel = ui.addTextlabel("Impact Force (%)")
-                    .setText("Impact Force (%)")
-                    .setPosition(630,205)
-                     .setFont(contentFont)
-                    .setColorValue(0x00000050)
-                    .hide()
-                    ;  
+                            .setText("Impact Force (%)")
+                            .setPosition(635,630)
+                            .setFont(questionsFont)
+                            .setColorValue(0x000000ff)
+                            .hide();  
 
         startButton = ui.addButton("Start")
                             .setValue(0)
-                            .setPosition( 1030, 600)
+                            .setPosition( 1030, 610)
                             .setSize(100,50)
                             .onRelease(nextCallback);
 
         toggleHaptics = ui.addButton("tHaply")
-                            .setPosition( 1030, 530)
+                            .setPosition( 1030, 540)
                             .setSize(100,50)
                             .setSwitch(true)
                             .setLabel("Haply OFF")
@@ -113,13 +128,11 @@ public class GUI{
                             .hide();
 
         resetSensor = ui.addButton("rSensor")
-                            .setPosition( 870, 530)
+                            .setPosition( 870, 540)
                             .setSize(100,50)
                             .setLabel("Reset Sensor")
                             .onRelease(resetCallback)
                             .hide();                         
-
-        ui.addListener(radioListener);
 
         menuTitle =  ui.addTextlabel("LevelTitle")
                         .setText("")
@@ -133,7 +146,7 @@ public class GUI{
                         .setMultiline(true)
                         .setText("")
                         .setSize(320, 400)
-                        .setPosition(850, 100)
+                        .setPosition(850, 90)
                         .setFont(questionsFont)
                         .setColorValue(0x00000060)
                         .hide();
@@ -183,6 +196,13 @@ public class GUI{
         controlTop.setFill(10);
         controlTop.setStaticBody(true);
         controlTop.setName("Boundary Bottom");
+        
+        worldBackground = new FBox (WORLD_WIDTH, WORLD_HEIGHT/2 + 18f);
+        worldBackground.setPosition(WORLD_WIDTH/2, WORLD_HEIGHT - 42.5f);
+        worldBackground.setStaticBody(true);
+        worldBackground.setFill(1);
+        worldBackground.setSensor(true);
+        
 
         world.add(topBoundary);
         world.add(bottomBoundary);        
@@ -205,7 +225,7 @@ public class GUI{
         
         ui.addTextlabel("welcomeContent")
             .setMultiline(true)
-            .setText("Hello and welcome to Haplastic Collider! The following modules aim to act as an experiential educational tool for teaching users the fundamentals of two essential physics concepts in an engaging way! This includes collisions and gravitational (attraction) forces. By understanding these foundational physics concepts, one can have easier future learning about complex topics such as electron scattering, which can give a better understanding of things like how X-Ray machines work, or electrostatic attraction, used in topics such as electrical engineering and advanced chemistry. Aside from academics, understanding collision and gravity can give more context for daily life. We experience these forces constantly in everyday life, whether its watching an apple fall from a tree like Isaac Newton or playing a game of pool or croquet. \n\nThe following modules use a haptics interface to allow you to feel the forces that would result from either a collision (impact) or gravity. This is done to allow you to feel the difference certain factors like mass and velocity make in the magnitude of these forces. To ensure the best experience, we highly reccomend you to play with the changeable variables, hold on to the Haply and have fun!")
+            .setText("Hello and welcome to Haplastic Collider! The following modules aim to act as an experiential educational tool for teaching users the fundamentals of two essential physics concepts in an engaging way! This includes collisions antoggleActive(true); everyday life, whether its watching an apple fall from a tree like Isaac Newton or playing a game of pool or croquet. \n\nThe following modules use a haptics interface to allow you to feel the forces that would result from either a collision (impact) or gravity. This is done to allow you to feel the difference certain factors like mass and velocity make in the magnitude of these forces. To ensure the best experience, we highly reccomend  you to play with the changeable variables, hold on to the Haply and have fun!")
             .setSize(800, 500)
             .setPosition(200, 200)
             .setFont(contentFont)
@@ -220,6 +240,7 @@ public class GUI{
         world.add(menuRight);
         world.add(controlTop);
         world.add(controlBackground);
+        world.add(worldBackground);
 
         isStart = false;
     }
@@ -227,10 +248,10 @@ public class GUI{
     // add the methods for other levels here
     public void initCollisions(){
         initBackground();
-        plateVelocity.show();
-        ballVelocity.show();
-        plateM.show();
-        ballM.show();
+        knob_2.show();
+        knob_1.show();
+        knob_4.show();
+        knob_3.show();
 
         toggleHaptics.show();
         resetSensor.show();
@@ -238,9 +259,7 @@ public class GUI{
     
      public void initElasticCollisions(){
         initBackground();
-        ballVelocity.show();
-        plateM.show();
-        ballM.show();
+        showKnobs(3, true, "Mass of Effector", "Mass of Ball", "Velocity of Ball");
         Impact_Slider.show();
         SliderLabel.show();
         menuTitle.setText("Elastic Collisions").show();
@@ -250,9 +269,7 @@ public class GUI{
     
      public void initInelasticCollisions(){
         initBackground();
-        ballVelocity.show();
-        plateM.show();
-        ballM.show();
+        showKnobs(3, true, "Mass of Effector", "Mass of Ball",  "Velocity of Ball");
         Impact_Slider.show();
         SliderLabel.show();
         menuTitle.setText("Inelastic Collisions").show();
@@ -262,7 +279,7 @@ public class GUI{
     
      public void initGravity_single(){
         initBackground();
-        ballM.show();
+        showKnobs(2, false, "Mass of Effector", "Mass of Well");
         menuTitle.setText("Gravitational Forces").show();
         menuDesc.setText("Gravity is the universal force that "+
         "causes bodies to be drawn towards each other. It is what keeps you on the ground and causes objects to fall. "+
@@ -277,39 +294,56 @@ public class GUI{
     
     public void initGravity_triple(){
         initBackground();
-        ballM.show();
+        showKnobs(4, false, "Mass of Effector", "Mass of Well", "Mass of Well 2", "Mass of Well 3");
         menuTitle.setText("Gravitational Forces").show();
         menuDesc.setText("When there are multiple bodies in a system, the gravitational force between the bodies interacts "+
         "in a manner that is dependent on their mass and distance. Move the end effector around the screen and fell how the "+
         "direction of force changes based on your proximity to the different bodies. When you are ready, answer the questions "+
-        "below to test your understanding. ").show();
+        "below to test your understanding. ").setSize(330, 150).setPosition(850, 60).show();
+
+        int posX = 850;
+        int posY = 150;   
+        toggleActive(false);
+
+        for(int i = 0; i < gravQue.getQuestions().size() ; i++){
+            addQuestion(
+                gravQue.getQuestions().get(i)[0], 
+                gravQue.getQuestions().get(i)[1], 
+                posX, 
+                posY + i*100,
+                Arrays.copyOfRange(gravQue.getQuestions().get(i), 2, gravQue.getQuestions().get(i).length) 
+            );
+        }  
+        Answers = new int[gravQue.getAnswers().length];  
         //String[] ans = {"Decreased to half its initial value\n", "Increased to twice its initial value\n", 
         //"Increased to four times its initial value\n", "The gravitational force remains unchanged"};
-        //addQuestion("Q1", 
+        //addQuestion("CollisionQuestions", 
         //"If the distance between Earth and the moon is doubled, with no change in mass, the gravitational force of attraction is:",
         //850,400, ans);
     }
 
     public void initAllCollisions(){
         initBackground();
-        // startButton.setLock(true);
-
+        showKnobs(4, false, "Mass of Effector", "Mass of Ball 1", "Mass of Ball 2", "Velocity of Ball 2");
+        toggleActive(false);
         menuTitle.setText("Elastic and Inelastic").show();
 
             
-            int posX = 850;
-            int posY = 100;   
+        int posX = 850;
+        int posY = 90;   
 
 
-            for(int i = 0; i < questions.getQuestions().size() ; i++){
-                addQuestion(
-                    questions.getQuestions().get(i)[0], 
-                    questions.getQuestions().get(i)[1], 
-                    posX, 
-                    posY + i*50,
-                    Arrays.copyOfRange(questions.getQuestions().get(i), 2, questions.getQuestions().get(i).length) 
-                );
-            }         
+        for(int i = 0; i < questions.getQuestions().size() ; i++){
+            addQuestion(
+                questions.getQuestions().get(i)[0], 
+                questions.getQuestions().get(i)[1], 
+                posX, 
+                posY + i*105,
+                Arrays.copyOfRange(questions.getQuestions().get(i), 2, questions.getQuestions().get(i).length) 
+            );
+        }  
+        Answers = new int[questions.getAnswers().length];  
+        ui.addListener(radioListener);
      }
     
     public void initSandbox(){
@@ -317,6 +351,7 @@ public class GUI{
         // startButton.setLock(true);
 
         menuTitle.setText("Sandbox").show() ;
+        toggleActive(false);
     }
 
     // Button Listeners
@@ -361,7 +396,14 @@ public class GUI{
         public void controlEvent(ControlEvent event){
             if(event.isGroup()){
                 // switch(event.getName())
-                System.out.println(event.getGroup().getName());
+                Answers[Integer.parseInt(event.getGroup().getName().split("_")[1]) - 1] = (int) event.getGroup().getValue();
+                if(currentLevel == 3 && Arrays.equals(Answers, questions.getAnswers())){
+                    toggleActive(true);
+                }else if(currentLevel == 5 && Arrays.equals(Answers, gravQue.getAnswers())){
+                    toggleActive(true);
+                }else {
+                    toggleActive(false);
+                }
             }
         }
     };
@@ -369,18 +411,22 @@ public class GUI{
 
     // questions
     private void addQuestion(String label, String qText, int posX, int posY, String [] answers){
+        // System.out.println(qText.length());
+        int ansLineSpace = qText.length() > 205 ? 65 : 55;
         ui.addTextlabel(label)
             .setMultiline(true)
-            .setText(qText)
-            .setSize(350, 20)
+            .setValue(qText)
+            .setSize(320, ansLineSpace)
             .setPosition(posX, posY)
             .setFont(questionsFont)
+            // .setColorBackground(0x33565656)
             .setColorValue(0x00000060);
 
-        RadioButton temp  = ui.addRadioButton(label+"Ans")
-            .setItemsPerRow(answers.length)
-            .setSpacingColumn(300/answers.length)
-            .setPosition(posX, posY + 30);
+        RadioButton temp  = ui.addRadioButton(label+"_Ans")
+            .setItemsPerRow(2)
+            .setSpacingColumn(320/2 + 10)
+            .setSpacingRow(5)
+            .setPosition(posX + 10, posY + ansLineSpace);
         
         for(int i=0; i< answers.length; i++){
             temp.addItem(answers[i], i+1);
@@ -391,22 +437,22 @@ public class GUI{
 
 
     // Setters
-    public void setPlateVelocity(float value){
-        plateVelocity.setValue(value);
+    public void setKnob_1(float value){
+        knob_1.setValue(value);
     }
-
-    public void setBallVelocity(float value){
-        ballVelocity.setValue(value);
+    public void setKnob_2(float value){
+        knob_2.setValue(value);
+    }    
+    public void setKnob_3(float value){
+        knob_3.setValue(value);
     }
-
-    public void setPlateMass(float value){
-        plateM.setValue(value);
+    public void setKnob_4(float value){
+        knob_4.setValue(value);
     }
-
-    public void setBallMass(float value){
-        ballM.setValue(value);
+    public void setImpactSlider(float value){
+        Impact_Slider.setValue(value);
     }
-
+    
     public void setIsReset(boolean rValue){
         isReset = rValue;
     }
@@ -421,22 +467,23 @@ public class GUI{
 
 
     //Getters
-    public float getPlateVelocity(){
-        return plateVelocity.getValue();
+    public float getKnob_1(){
+        return knob_1.getValue();
+    }
+    public float getKnob_2(){
+        return knob_2.getValue();
+    }   
+    public float getKnob_3(){
+        return knob_3.getValue();
+    }
+    public float getKnob_4(){
+        return knob_4.getValue();
+    }
+    public float getImpactSlider(){
+        return Impact_Slider.getValue();
     }
 
-    public float getBallVelocity(){
-        return ballVelocity.getValue();
-    }
-
-    public float getPlateMass(){
-        return plateM.getValue();
-    }
-
-    public float getBallMass(){
-        return ballM.getValue();
-    }
-
+    
     public FWorld getWorld(){
         return world;
     }
@@ -485,6 +532,28 @@ public class GUI{
             if(hapticSensor != null)
                 hapticSensor.h_avatar.setSensor(false);
         }   
+    }
+
+    private void showKnobs(float number, boolean isSliderPresent, String ...knobNames){
+        float initX = 100, spacing = 150;
+        if(isSliderPresent){
+            initX = 50;
+        }
+        for(int i=0; i< number; i++){
+            knobList.get(i).setPosition(initX + (i*spacing), 570).setLabel(knobNames[i]).show();
+        }
+    }
+
+    private void toggleActive(boolean isActive){
+        if(isActive){
+            // startButton.setColorForeground(0xff1e90ff);
+            // startButton.setColorBackground(0xff191950);
+            this.startButton.show();
+        }else{
+            // startButton.setColorForeground(0xffaaaaaa);
+            // startButton.setColorBackground(0xffaaaaaa);
+            this.startButton.hide();
+        }
     }
     
 }
