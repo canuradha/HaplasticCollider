@@ -13,10 +13,12 @@ float pixelsPerMeter = 10.0;
 
 //Graphics
 PImage asteroid;
+PImage planet;
 PImage gravwell_s;
 PImage gravwell_m;
 PImage gravwell_l;
 PImage gravwell_single;
+PImage backgroundpic;
 
 
 // Haply Initializatons
@@ -220,10 +222,13 @@ void setup() {
   // basePlate = initBox(BOUNDARY_SIZE, BOUNDARY_SIZE * 5, platePositionX, platePositionY, false);
  
   asteroid = loadImage("asteroid.png");
+  planet = loadImage("planet.png");
   gravwell_single = loadImage("GravWell.png");
   gravwell_l = loadImage("GravWell.png");
   gravwell_m = loadImage("GravWell.png");
   gravwell_s = loadImage("GravWell.png");
+  backgroundpic = loadImage("backgroundpic.png");
+        
  
   //Initialization of balls for Modules 1 and 2
   bouncey_ball_1 = initBall(4* ballRadius, WORLD_WIDTH/2, WORLD_HEIGHT/2, 0.0f, false);
@@ -280,11 +285,15 @@ void draw(){
   //}
   if(ui.getIsStart()){
     world =ui.getWorld();
+    backgroundpic.resize((int) (pixelsPerMeter*ui.worldBackground.getWidth()), (int) (pixelsPerMeter*ui.worldBackground.getHeight()));
+    ui.worldBackground.attachImage(backgroundpic);
 
     switch(ui.getCurrentLevel()){
       case 1:
         ui.initElasticCollisions();
         world.add(bouncey_ball_1);
+        planet.resize((int) (pixelsPerMeter*bouncey_ball_1.getSize()), (int) (pixelsPerMeter*bouncey_ball_1.getSize()));
+        bouncey_ball_1.attachImage(planet);
         ui.setKnob_2(bouncey_ball_1.getSize());
         ui.setKnob_3(reScale((float)Math.sqrt(Math.pow(bouncey_ball_1.getVelocityX(),2)+ Math.pow(bouncey_ball_1.getVelocityY(), 2)), MAX_VELOCITY, 0, 10));
         addSensor();
@@ -709,7 +718,7 @@ void commit_inelastic_results (FContact c, FBody body1, FBody body2, float KE_lo
     perc =  Math.sqrt(v2x_f*v2x_f + v2y_f*v2y_f)/Math.sqrt(50*50 + 50*50);
   }
   
-  ui.setKnob_3(constrain((float) perc,0,10));
+  ui.setKnob_3((float)Math.sqrt(bouncey_ball_2.getVelocityX()*bouncey_ball_2.getVelocityX() + bouncey_ball_2.getVelocityY()*bouncey_ball_2.getVelocityY())); //changed
   ui.setImpactSlider((float) perc*100);
   double D = 20* (float) perc;
   delay((int) D);

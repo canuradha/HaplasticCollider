@@ -7,6 +7,7 @@ import java.util.Arrays;
 
 public class GUI{
 
+    float pixelsPerMeter = 10.0f;
     private PApplet currentApp;
     private ControlP5 ui;
     private Knob knob_1, knob_2, knob_3, knob_4;
@@ -18,7 +19,10 @@ public class GUI{
     private FWorld world;
     private HVirtualCoupling hapticSensor;
     private FBox topBoundary, bottomBoundary, leftBoundary, rightBoundary, controlBackground, controlTop;
+    FBox worldBackground;
     private FBox menuRight, menuBottom;
+    PImage backgroundpic;
+    
 
     private ArrayList<Knob> knobList;
     private float WORLD_WIDTH, WORLD_HEIGHT, BOUNDARY_SIZE;
@@ -72,7 +76,7 @@ public class GUI{
                             .hide();
 
         knob_3 =  ui.addKnob("Ball 2 Speed")
-                            .setRange(0,10)
+                            .setRange(0,50)
                             .setValue(0)
                             .setPosition(420, 570)
                             .setRadius(50)
@@ -192,6 +196,13 @@ public class GUI{
         controlTop.setFill(10);
         controlTop.setStaticBody(true);
         controlTop.setName("Boundary Bottom");
+        
+        worldBackground = new FBox (WORLD_WIDTH, WORLD_HEIGHT/2 + 18f);
+        worldBackground.setPosition(WORLD_WIDTH/2, WORLD_HEIGHT - 42.5f);
+        worldBackground.setStaticBody(true);
+        worldBackground.setFill(1);
+        worldBackground.setSensor(true);
+        
 
         world.add(topBoundary);
         world.add(bottomBoundary);        
@@ -229,6 +240,7 @@ public class GUI{
         world.add(menuRight);
         world.add(controlTop);
         world.add(controlBackground);
+        world.add(worldBackground);
 
         isStart = false;
     }

@@ -11,7 +11,7 @@ public class GravityQuestions{
             "If the distance between Earth and the moon is doubled, with no change in mass, the gravitational force of attraction is:", 
             "Decreased to 0.5x initial value. ", 
             "Increased to 2x initial value. ",
-            "Increased to 4x its initial value. ",
+            "Decreased to 1/4 its initial value. ",
             "Remains unchanged."
         });
         Questions.add(new String[]{

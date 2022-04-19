@@ -24,11 +24,11 @@ public class CollisionQuestions{
         });
         Questions.add(new String[]{
             "CQ_3", 
-            "In a perfectly elastic collision between object 1, mass: 2Kg, velocity: 5m/s in the +X direction, and a static, infinitely massive wall, what will be the resulting velocity of object 1 after collision?", 
-            "4m/s in the +X direction", 
-            "5 m/s in the +X direction", 
-            "2.5 m/s in the +X direction", 
-            "5m/s in the -X direction"
+            "In a perfectly elastic collision between object 1, travelling in the +X direction, and a static, infinitely massive wall, what will to object 1 after collision?", 
+            "Same same speed, +X direction", 
+            "Half speed, -X direction", 
+            "Stop after hitting the wall", 
+            "Same speed, -X direction"
         });
         Questions.add(new String[]{
             "CQ_4", 
