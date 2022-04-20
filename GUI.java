@@ -76,7 +76,7 @@ public class GUI{
                             .hide();
 
         knob_3 =  ui.addKnob("Ball 2 Speed")
-                            .setRange(0,50)
+                            .setRange(1,10)
                             .setValue(0)
                             .setPosition(420, 570)
                             .setRadius(50)
@@ -263,7 +263,7 @@ public class GUI{
         Impact_Slider.show();
         SliderLabel.show();
         menuTitle.setText("Elastic Collisions").show();
-        menuDesc.setText("Elastic collisions have no loss of kinetic energy; in other words, both momentum and kinetic energy are the same before and after the collision. In the real world, examples of elastic collisions include scattering of light, atomic or subatomic particles.  \n\n Kinetic energy is defined mathematically as: \n\n Ke = 0.5*m*v^2 (1a), where m = mass, v = velocity \n\n Momentum is defined mathematically by the formula: \n\n p = mv (1b), where m = mass, v = velocity \n\nThis means that while momemtum scales linearly with mass and velocity, kinetic energy scales linearly with mass but exponenetially with velocity. The higher the mass and konetic energy of the objects involved in the collision, the larger the impact force created on collision").show();
+        menuDesc.setText("Elastic collisions have no loss of kinetic energy; in other words, both momentum and kinetic energy are the same before and after the collision. In the real world, examples of elastic collisions include scattering of light, atomic or subatomic particles.  \n\n Kinetic energy is defined mathematically as: \n\n Ke = 0.5*m*v^2 (1a), where m = mass, v = velocity \n\n Momentum is defined mathematically by the formula: \n\n p = mv (1b), where m = mass, v = velocity \n\nThis means that while momemtum scales linearly with mass and velocity, kinetic energy scales linearly with mass but exponenetially with velocity. The higher the mass and konetic energy of the objects involved in the collision, the larger the impact force created on collision \n\n\n controls: \n\t Q, A - Increase/ Decrease Mass of the effector\n\n\t W, S - Increase/ Decrease Mass of the Ball\n\n\t E, D - Increase/ Decrease Velocity of the Ball").show();
         
     }
     
@@ -273,7 +273,7 @@ public class GUI{
         Impact_Slider.show();
         SliderLabel.show();
         menuTitle.setText("Inelastic Collisions").show();
-        menuDesc.setText("In inelastic collisions, some of the kinetic energy of the objects is lost to the surroundings or changed into another form of energy such as sound or heat. Because of this loss, kinetic energy is no longer conserved in the objects involved through the collision, although momentum is. Therefore: \n\n KEi ≠ Kef,\n\n where KEi is Kinetic energy before collision and KEf is after.  \n\nInelastic collisions are more common in our daily lives, including things like car crashes, the game of pool, or the classic Newton’s cradle. \n\nA major difference between elastic and inelastic collisions is this loss in energy. Due to the loss of kinetic energy in inelastic collisions, two collsions, one elastic and one inelastic, with the exact same intitial parameters (object masses and velocities), will have different outcomes.").show();
+        menuDesc.setText("In inelastic collisions, some of the kinetic energy of the objects is lost to the surroundings or changed into another form of energy such as sound or heat. Because of this loss, kinetic energy is no longer conserved in the objects involved through the collision, although momentum is. Therefore: \n\n KEi ≠ Kef,\n\n where KEi is Kinetic energy before collision and KEf is after.  \n\nInelastic collisions are more common in our daily lives, including things like car crashes, the game of pool, or the classic Newton’s cradle. \n\nA major difference between elastic and inelastic collisions is this loss in energy. Due to the loss of kinetic energy in inelastic collisions, two collsions, one elastic and one inelastic, with the exact same intitial parameters (object masses and velocities), will have different outcomes.\n\n\n controls: \n\t Q, A - Increase/ Decrease Mass of the effector\n\n\t W, S - Increase/ Decrease Mass of the Ball\n\n\t E, D - Increase/ Decrease Velocity of the Ball").show();
 
     }
     
@@ -289,7 +289,7 @@ public class GUI{
         "Based on this equation, the force of gravity is directly proportional to the mass of the bodies and inversely proportional"+
         " to the square of the distance between them. \n\nBlack holes are a place in "+
         "space where the pull of gravitational force is so strong that even light cannot escape. Move the end effector around the screen "+
-        "and observe how the force feels as you move closer to the black hole. ").show();
+        "and observe how the force feels as you move closer to the black hole. \n\n\n controls: \n\t Q, A - Increase/ Decrease Mass of the effector\n\n\t W, S - Increase/ Decrease Mass of the Gravity Well").show();
     }
     
     public void initGravity_triple(){
@@ -324,7 +324,7 @@ public class GUI{
 
     public void initAllCollisions(){
         initBackground();
-        showKnobs(4, false, "Mass of Effector", "Mass of Ball 1", "Mass of Ball 2", "Velocity of Ball 2");
+        showKnobs(3, false, "Mass of Effector", "Mass of Ball 1", "Mass of Ball 2");
         toggleActive(false);
         menuTitle.setText("Elastic and Inelastic").show();
 
@@ -542,16 +542,17 @@ public class GUI{
         for(int i=0; i< number; i++){
             knobList.get(i).setPosition(initX + (i*spacing), 570).setLabel(knobNames[i]).show();
         }
+        if(currentLevel <= 2){
+            knob_3.setRange(1,50);
+        }else{ 
+            knob_3.setRange(1,10);
+        }
     }
 
     private void toggleActive(boolean isActive){
         if(isActive){
-            // startButton.setColorForeground(0xff1e90ff);
-            // startButton.setColorBackground(0xff191950);
             this.startButton.show();
         }else{
-            // startButton.setColorForeground(0xffaaaaaa);
-            // startButton.setColorBackground(0xffaaaaaa);
             this.startButton.hide();
         }
     }
