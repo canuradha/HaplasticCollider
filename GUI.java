@@ -349,8 +349,16 @@ public class GUI{
     public void initSandbox(){
         initBackground();
         // startButton.setLock(true);
-
+        menuDesc.setText("This is the final level, good work so far! For this level, you must bring the effector (red ball) to the target area, earth. While travelling, you will find wild planets, asteroids and blackholes blocking your path. Do your best to figure out how to get back home!").show();
         menuTitle.setText("Sandbox").show() ;
+        
+        ui.addTextlabel("hint")
+            .setText("HINT: Inelastic collisions may result in a loss of mass...")
+            .setPosition(80, 625)
+            .setSize(100, 100)
+            .setFont(contentFont)
+            .setColorValue(0x00000000);
+        
         toggleActive(false);
     }
 

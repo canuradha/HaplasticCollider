@@ -18,7 +18,7 @@ PImage gravwell_s;
 PImage gravwell_m;
 PImage gravwell_l;
 PImage gravwell_single;
-PImage backgroundpic;
+PImage backgroundpic, rocket;
 
 
 // Haply Initializatons
@@ -161,6 +161,8 @@ void addSensor(){
   sensor = new HVirtualCoupling((3)); 
   sensor.h_avatar.setDensity(400); 
   sensor.h_avatar.setFill(255,0,0); 
+  rocket.resize((int)(1.25*pixelsPerMeter*sensor.h_avatar.getSize()), ((int) (1.25*pixelsPerMeter*sensor.h_avatar.getSize())));
+  sensor.h_avatar.attachImage(rocket);
   // sensor.h_avatar.setSensor(true);
 
   if(ui != null)
@@ -228,6 +230,7 @@ void setup() {
   gravwell_m = loadImage("GravWell.png");
   gravwell_s = loadImage("GravWell.png");
   backgroundpic = loadImage("backgroundpic.png");
+  rocket = loadImage("rocket.png");
         
  
   //Initialization of balls for Modules 1 and 2
@@ -312,6 +315,8 @@ void draw(){
         
       case 3:
         ui.initAllCollisions();
+        bouncey_ball_2.setSize(10*ballRadius);
+        asteroid.resize((int) (pixelsPerMeter*bouncey_ball_2.getSize()), (int) (pixelsPerMeter*bouncey_ball_2.getSize()));
         world.add(bouncey_ball_1);
         world.add(bouncey_ball_2);
         ui.setKnob_2(bouncey_ball_1.getSize());
@@ -324,10 +329,10 @@ void draw(){
         addSensor();
         world.add(well_single);
         ui.setKnob_2(reScale(well_single.getSize(), 15, 0, 10));
-        //world.add(arrow_line);
+        world.add(arrow_line);
         // world.add(well_medium);
         // world.add(well_small);
-        //arrow(xE, yE, fEE.x, fEE.y);
+        arrow(xE, yE, fEE.x, fEE.y);
         //line(posEE.x, posEE.y, posEE.x+10, posEE.y+10);
         break;
      
@@ -347,12 +352,26 @@ void draw(){
       case 6:
         ui.initSandbox();   
         addSensor();
+        well_medium.setSize(well_medium.getSize()*2);
+        well_small.setSize(well_small.getSize()*2);
+        well_large.setSize(well_large.getSize()*2);
+        
+        gravwell_s.resize((int)(1.25*pixelsPerMeter*well_small.getSize()), (int)(1.25*pixelsPerMeter*well_small.getSize()));
+        gravwell_m.resize((int)(1.25*pixelsPerMeter*well_medium.getSize()), (int)(1.25*pixelsPerMeter*well_medium.getSize()));
+        gravwell_l.resize((int)(1.25*pixelsPerMeter*well_large.getSize()), (int)(1.25*pixelsPerMeter*well_large.getSize()));
+        
+        well_medium.setPosition(well_medium.getX() + 5, well_medium.getY()-15);
+        well_large.setPosition(well_large.getX(), well_large.getY()+10);
+        
         world.add(well_medium);
         world.add(well_small);
-        asteroid.resize((int) (pixelsPerMeter*bouncey_ball_1.getSize()), (int) (pixelsPerMeter*bouncey_ball_1.getSize()));
-        bouncey_ball_1.attachImage(asteroid);
+        world.add(well_large);
         
-        
+        planet.resize((int) (pixelsPerMeter*bouncey_ball_1.getSize()), (int) (pixelsPerMeter*bouncey_ball_1.getSize()));
+        bouncey_ball_1.attachImage(planet);
+        bouncey_ball_2.setSize(10*ballRadius);
+        asteroid.resize((int) (pixelsPerMeter*bouncey_ball_2.getSize()), (int) (pixelsPerMeter*bouncey_ball_2.getSize()));
+                      
         world.add(bouncey_ball_1);
         world.add(bouncey_ball_2);
         //arrow(xE, yE, fEE.x, fEE.y);
@@ -607,13 +626,13 @@ void contactStarted(FContact c){ //Called on contact between any 2 objects
     return;
   }
   if(ui.getIsHapticsOn()){
-    if (ui.getCurrentLevel() == 1){ //Check for first level
+    if ((ui.getCurrentLevel() == 1 || ui.getCurrentLevel() == 3 || ui.getCurrentLevel() == 6) & (body1 == bouncey_ball_1 || body2 == bouncey_ball_1)){ //Check for first level
   
       commit_elastic_results(c, body1, body2); //Elastic collision function
 
-    }else if (ui.getCurrentLevel() == 2){ //Check for second level
+    }else if ((ui.getCurrentLevel() == 2 || ui.getCurrentLevel() == 3 || ui.getCurrentLevel() == 6) & (body1 == bouncey_ball_2 || body2 == bouncey_ball_2)){ //Check for second level
       
-      commit_inelastic_results(c, body1, body2, 0.5); //Inelastic Collision function
+      commit_inelastic_results(c, body1, body2, 0.75); //Inelastic Collision function
       
     }
   }
@@ -668,7 +687,10 @@ void commit_elastic_results (FContact c, FBody body1, FBody body2){ //Elastic co
   ui.setKnob_3(reScale((float) perc, 100,0,10));
   perc = constrain((float) perc,0,1);
   ui.setImpactSlider((float) perc*100); //update slider
-  double D = 20* (float) perc;
+  double D = 15* (float) perc;
+  if (D>15){
+    D = 15;
+  }
   delay((int) D);
 
   
@@ -720,12 +742,27 @@ void commit_inelastic_results (FContact c, FBody body1, FBody body2, float KE_lo
   
   ui.setKnob_3((float)Math.sqrt(bouncey_ball_2.getVelocityX()*bouncey_ball_2.getVelocityX() + bouncey_ball_2.getVelocityY()*bouncey_ball_2.getVelocityY())); //changed
   ui.setImpactSlider((float) perc*100);
-  double D = 20* (float) perc;
+   double D = 15* (float) perc;
+  if (D>15){
+    D = 15;
+  }
   delay((int) D);
   
-  bouncey_ball_2.setSize(bouncey_ball_2.getSize()*0.95);
-  asteroid.resize((int) (pixelsPerMeter*bouncey_ball_2.getSize()), (int) (pixelsPerMeter*bouncey_ball_2.getSize()));
-  
+  if(ui.getCurrentLevel() == 2 || ui.getCurrentLevel() == 3){
+    bouncey_ball_2.setSize(bouncey_ball_2.getSize()*0.925);
+    asteroid.resize((int) (pixelsPerMeter*bouncey_ball_2.getSize()), (int) (pixelsPerMeter*bouncey_ball_2.getSize()));
+  }
+  else if(ui.getCurrentLevel()==6 & (body1 == sensor.h_avatar || body2 == sensor.h_avatar)){
+    
+    if (bouncey_ball_2.getSize() < 14){
+      bouncey_ball_2.setSize(bouncey_ball_2.getSize()*1.05);
+      asteroid.resize((int) (pixelsPerMeter*bouncey_ball_2.getSize()), (int) (pixelsPerMeter*bouncey_ball_2.getSize()));
+    }
+    
+    if (sensor.h_avatar.getSize() >1){
+      sensor.h_avatar.setSize(sensor.h_avatar.getSize()*(0.95));
+    }
+  }
 }
 
 
