@@ -277,10 +277,10 @@ void draw(){
     switch(ui.getCurrentLevel()){
       case 1:
         ui.initElasticCollisions();
-        dampingScale = 75000;
+        dampingScale = 500000;
         world.add(bouncey_ball_1);
         ui.setKnob_2(bouncey_ball_1.getSize());
-        ui.setKnob_3(reScale((float)Math.sqrt(Math.pow(bouncey_ball_1.getVelocityX(),2)+ Math.pow(bouncey_ball_1.getVelocityY(), 2)), MAX_VELOCITY, 0, 10));
+        ui.setKnob_3(reScale((float)Math.sqrt(Math.pow(bouncey_ball_1.getVelocityX(),2)+ Math.pow(bouncey_ball_1.getVelocityY(), 2)), MAX_VELOCITY, 0, 50));
         addSensor();
         if(sensor != null){
           ui.setKnob_1(sensor.h_avatar.getSize());
@@ -374,6 +374,8 @@ void draw(){
       arrow(xE, yE, fEE.x, fEE.y);
     } else if(ui.getCurrentLevel() == 5){
       arrow(xE, yE, fEE.x, fEE.y);
+    }else if(ui.getCurrentLevel() == 0){
+      ui.welcome();
     }
     
     world.draw();
@@ -655,7 +657,10 @@ void commit_elastic_results (FContact c, FBody body1, FBody body2){ //Elastic co
   }else if (body2 == bouncey_ball_1){
     perc =  Math.sqrt(v2x_f*v2x_f + v2y_f*v2y_f)/Math.sqrt(50*50 + 50*50);
   }
-  ui.setKnob_3(reScale((float) perc, 100,0,10));
+  if(ui.getCurrentLevel() != 3){
+    ui.setKnob_3((float) perc * 50);
+  }
+  
   perc = constrain((float) perc,0,1);
   ui.setImpactSlider((float) perc*100); //update slider
   double D = 20* (float) perc;
@@ -710,7 +715,7 @@ void commit_inelastic_results (FContact c, FBody body1, FBody body2, float KE_lo
   }else if (body2 == bouncey_ball_2){
     perc =  Math.sqrt(v2x_f*v2x_f + v2y_f*v2y_f)/Math.sqrt(50*50 + 50*50);
   }
-  
+
    //changed
   ui.setImpactSlider((float) perc*100);
   double D = 20* (float) perc;
@@ -721,7 +726,7 @@ void commit_inelastic_results (FContact c, FBody body1, FBody body2, float KE_lo
   // ui.setKnob_2.
 
   if(ui.getCurrentLevel() == 2){
-    ui.setKnob_3((float)Math.sqrt(bouncey_ball_2.getVelocityX()*bouncey_ball_2.getVelocityX() + bouncey_ball_2.getVelocityY()*bouncey_ball_2.getVelocityY()));
+    ui.setKnob_3((float) perc * 50);
     ui.setKnob_2(bouncey_ball_2.getSize());
   }else if(ui.getCurrentLevel() == 3){
     ui.setKnob_3(bouncey_ball_2.getSize());

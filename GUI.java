@@ -11,10 +11,10 @@ public class GUI{
     private PApplet currentApp;
     private ControlP5 ui;
     private Knob knob_1, knob_2, knob_3, knob_4;
-    private Button startButton, toggleHaptics, resetSensor;
+    private Button startButton, toggleHaptics, resetSensor, backButton;
     private PFont titleFont, contentFont, LevelTitleFont, questionsFont;
     private Slider Impact_Slider;
-    private Textlabel SliderLabel, menuTitle, menuDesc;
+    private Textlabel SliderLabel, menuTitle, menuDesc, welcomeTitle, welcomeText;
 
     private FWorld world;
     private HVirtualCoupling hapticSensor;
@@ -118,6 +118,13 @@ public class GUI{
                             .setPosition( 1030, 610)
                             .setSize(100,50)
                             .onRelease(nextCallback);
+                            
+        backButton = ui.addButton("Back")
+                            .setValue(0)
+                            .setPosition( 870, 610)
+                            .setSize(100,50)
+                            .onRelease(previousCallback)
+                            .hide();
 
         toggleHaptics = ui.addButton("tHaply")
                             .setPosition( 1030, 540)
@@ -150,6 +157,23 @@ public class GUI{
                         .setFont(questionsFont)
                         .setColorValue(0x00000060)
                         .hide();
+
+        welcomeTitle = ui.addTextlabel("Wel")
+                        .setText("WELCOME")
+                        .setPosition(450, 100)
+                        .setSize(200, 100)
+                        .setFont(titleFont)
+                        .setColorValue(0x00000000)
+                        .hide();
+        
+        welcomeText = ui.addTextlabel("welcomeContent")
+            .setMultiline(true)
+            .setText("Hello and welcome to Haplastic Collider! The following modules aim to act as an experiential educational tool for teaching users the fundamentals of two essential physics concepts in an engaging way! This includes collisions antoggleActive(true); everyday life, whether its watching an apple fall from a tree like Isaac Newton or playing a game of pool or croquet. \n\nThe following modules use a haptics interface to allow you to feel the forces that would result from either a collision (impact) or gravity. This is done to allow you to feel the difference certain factors like mass and velocity make in the magnitude of these forces. To ensure the best experience, we highly reccomend  you to play with the changeable variables, hold on to the Haply and have fun!")
+            .setSize(800, 500)
+            .setPosition(200, 200)
+            .setFont(contentFont)
+            .setColorValue(0x00000050)
+            .hide();
                         
        
 
@@ -216,24 +240,13 @@ public class GUI{
 
     public void welcome(){
      
-        ui.addTextlabel("Wel")
-            .setText("WELCOME")
-            .setPosition(450, 100)
-            .setSize(200, 100)
-            .setFont(titleFont)
-            .setColorValue(0x00000000);
-        
-        ui.addTextlabel("welcomeContent")
-            .setMultiline(true)
-            .setText("Hello and welcome to Haplastic Collider! The following modules aim to act as an experiential educational tool for teaching users the fundamentals of two essential physics concepts in an engaging way! This includes collisions antoggleActive(true); everyday life, whether its watching an apple fall from a tree like Isaac Newton or playing a game of pool or croquet. \n\nThe following modules use a haptics interface to allow you to feel the forces that would result from either a collision (impact) or gravity. This is done to allow you to feel the difference certain factors like mass and velocity make in the magnitude of these forces. To ensure the best experience, we highly reccomend  you to play with the changeable variables, hold on to the Haply and have fun!")
-            .setSize(800, 500)
-            .setPosition(200, 200)
-            .setFont(contentFont)
-            .setColorValue(0x00000050);
-
+        welcomeTitle.show();
+        welcomeText.show();
         startButton.show();
 
     }
+
+   
 
     public void initBackground(){
 
@@ -270,6 +283,7 @@ public class GUI{
      public void initInelasticCollisions(){
         initBackground();
         showKnobs(3, true, "Mass of Effector", "Mass of Ball",  "Velocity of Ball");
+        backButton.show();
         Impact_Slider.show();
         SliderLabel.show();
         menuTitle.setText("Inelastic Collisions").show();
@@ -369,17 +383,48 @@ public class GUI{
                     if(!t.getName().equals("Start")){
                         t.hide();
                     }
+                    if(t.getName().equals("Back") && currentLevel > 1){
+                        System.out.println(currentLevel);
+                        t.show();
+                    }
                 }
                 if(currentLevel == 0){
                     event.getController().setLabel("Next");
                 }
-
+                
                 switchHaptics(true);
                 toggleHaptics.show();
                 resetSensor.show();
                 clearWorld();
                 currentLevel++;
                 isStart = true;
+            }
+        }
+    };
+
+    private CallbackListener previousCallback = new CallbackListener(){
+        public void controlEvent(CallbackEvent event) {
+            if(currentLevel > 1){
+                for(ControllerInterface<?>  t: ui.getAll()){
+                    if(!t.getName().equals("Back") || currentLevel == 2){
+                        t.hide();
+                    }
+                    if(t.getName().equals("Start")){
+                        t.show();
+                    }
+                }
+               
+                switchHaptics(true);                
+                currentLevel--;
+                toggleHaptics.show();
+                resetSensor.show();
+                isStart = true;
+                // else{
+                //     toggleHaptics.hide();
+                //     resetSensor.hide();
+                //     isStart = false;
+                // }
+                clearWorld();
             }
         }
     };
