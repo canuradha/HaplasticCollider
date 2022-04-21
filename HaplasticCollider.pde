@@ -156,16 +156,16 @@ void initHaply(){
 
 void addSensor(){
    /* Setup the Virtual Coupling Contact Rendering Technique */
-  sensor = new HVirtualCoupling((4)); 
-  sensor.h_avatar.setDensity(400); 
-  sensor.h_avatar.setFill(255,0,0); 
-  // sensor.h_avatar.setSensor(true);
-  sensor.h_avatar.attachImage(resizeImage(rocket, (int) (pixelsPerMeter*sensor.h_avatar.getSize()), (int) (pixelsPerMeter*sensor.h_avatar.getSize())));
+  // sensor = new HVirtualCoupling((4)); 
+  // sensor.h_avatar.setDensity(400); 
+  // sensor.h_avatar.setFill(255,0,0); 
+  // // sensor.h_avatar.setSensor(true);
+  // sensor.h_avatar.attachImage(resizeImage(rocket, (int) (pixelsPerMeter*sensor.h_avatar.getSize()), (int) (pixelsPerMeter*sensor.h_avatar.getSize())));
 
-  if(ui != null)
-    ui.setSensor(sensor);
+  // if(ui != null)
+  //   ui.setSensor(sensor);
 
-  sensor.init(world, WORLD_WIDTH/2, BOUNDARY_SIZE + 5);
+  // sensor.init(world, WORLD_WIDTH/2, BOUNDARY_SIZE + 5);
 }
 
 
@@ -282,7 +282,9 @@ void draw(){
         ui.setKnob_2(bouncey_ball_1.getSize());
         ui.setKnob_3(reScale((float)Math.sqrt(Math.pow(bouncey_ball_1.getVelocityX(),2)+ Math.pow(bouncey_ball_1.getVelocityY(), 2)), MAX_VELOCITY, 0, 10));
         addSensor();
-        ui.setKnob_1(sensor.h_avatar.getSize());
+        if(sensor != null){
+          ui.setKnob_1(sensor.h_avatar.getSize());
+        }
         println("Second level");
         break;
 
@@ -292,7 +294,9 @@ void draw(){
         world.add(bouncey_ball_2);
         ui.setKnob_2(bouncey_ball_2.getSize());
         addSensor();
-        ui.setKnob_1(sensor.h_avatar.getSize());
+        if(sensor != null){
+          ui.setKnob_1(sensor.h_avatar.getSize());
+        }
         println("Third level");
         break;
         
@@ -304,14 +308,18 @@ void draw(){
         ui.setKnob_2(bouncey_ball_1.getSize());
         ui.setKnob_3(bouncey_ball_2.getSize());
         addSensor();
-        ui.setKnob_1(sensor.h_avatar.getSize());
+        if(sensor != null){
+          ui.setKnob_1(sensor.h_avatar.getSize());
+        }
         break;
       
       case 4:
         ui.initGravity_single(); 
         dampingScale = 2;  
         addSensor();
-        ui.setKnob_1(sensor.h_avatar.getSize());
+        if(sensor != null){
+          ui.setKnob_1(sensor.h_avatar.getSize());
+        }
         world.add(well_single);
         ui.setKnob_2(reScale(well_single.getSize(), 15, 0, 10));
         //world.add(arrow_line);
@@ -325,7 +333,9 @@ void draw(){
         ui.initGravity_triple(); 
         dampingScale = 2;  
         addSensor();
-        ui.setKnob_1(sensor.h_avatar.getSize());
+        if(sensor != null){
+          ui.setKnob_1(sensor.h_avatar.getSize());
+        }
         world.add(well_large);
         world.add(well_medium);
         world.add(well_small);
@@ -340,7 +350,9 @@ void draw(){
         ui.initSandbox();   
         dampingScale = 100;
         addSensor();
-        ui.setKnob_1(sensor.h_avatar.getSize());
+        if(sensor != null){
+          ui.setKnob_1(sensor.h_avatar.getSize());
+        }
 
         well_medium.setPosition(well_medium.getX() + 5, well_medium.getY()-15);
         well_large.setPosition(well_large.getX(), well_large.getY()+10);
