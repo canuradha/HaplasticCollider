@@ -156,16 +156,16 @@ void initHaply(){
 
 void addSensor(){
    /* Setup the Virtual Coupling Contact Rendering Technique */
-  // sensor = new HVirtualCoupling((4)); 
-  // sensor.h_avatar.setDensity(400); 
-  // sensor.h_avatar.setFill(255,0,0); 
-  // // sensor.h_avatar.setSensor(true);
-  // sensor.h_avatar.attachImage(resizeImage(rocket, (int) (pixelsPerMeter*sensor.h_avatar.getSize()), (int) (pixelsPerMeter*sensor.h_avatar.getSize())));
+  sensor = new HVirtualCoupling((4)); 
+  sensor.h_avatar.setDensity(400); 
+  sensor.h_avatar.setFill(255,0,0); 
+  // sensor.h_avatar.setSensor(true);
+  sensor.h_avatar.attachImage(resizeImage(rocket, (int) (pixelsPerMeter*sensor.h_avatar.getSize()), (int) (pixelsPerMeter*sensor.h_avatar.getSize())));
 
-  // if(ui != null)
-  //   ui.setSensor(sensor);
+  if(ui != null)
+    ui.setSensor(sensor);
 
-  // sensor.init(world, WORLD_WIDTH/2, BOUNDARY_SIZE + 5);
+  sensor.init(world, WORLD_WIDTH/2, BOUNDARY_SIZE + 5);
 }
 
 
