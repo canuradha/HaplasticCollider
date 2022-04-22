@@ -48,7 +48,7 @@ public class GUI{
         initWorldBoundary();
         // initBackground(w_width, w_height, b_size);
         initControls();
-        welcome();
+        // welcome();
         // allCollissions();
         // initCollisions();
     }
@@ -168,7 +168,7 @@ public class GUI{
         
         welcomeText = ui.addTextlabel("welcomeContent")
             .setMultiline(true)
-            .setText("Hello and welcome to Haplastic Collider! The following modules aim to act as an experiential educational tool for teaching users the fundamentals of two essential physics concepts in an engaging way! This includes collisions antoggleActive(true); everyday life, whether its watching an apple fall from a tree like Isaac Newton or playing a game of pool or croquet. \n\nThe following modules use a haptics interface to allow you to feel the forces that would result from either a collision (impact) or gravity. This is done to allow you to feel the difference certain factors like mass and velocity make in the magnitude of these forces. To ensure the best experience, we highly reccomend  you to play with the changeable variables, hold on to the Haply and have fun!")
+            .setText("Hello and welcome to Haplastic Collider! The following modules aim to act as an immersive educational tool for teaching the users about fundamentals of two essential physics concepts in an engaging way! This includes collisions and gravitational forces that are experianced in everyday life, whether its watching an apple fall from a tree like Isaac Newton or playing a game of pool or croquet. \n\nThe following modules use a haptics interface \"Haply\" to allow you to feel the forces that would result from either a collision (impact) or gravity. This is done to allow you to feel the difference of certain factors like mass and velocity make in the magnitude of these forces. To ensure the best experience, we highly recommend you to play with the changeable variables, hold on to the Haply and have fun!")
             .setSize(800, 500)
             .setPosition(200, 200)
             .setFont(contentFont)
@@ -362,7 +362,7 @@ public class GUI{
     
     public void initSandbox(){
         initBackground();
-        menuDesc.setText("This is the final level, good work so far! For this level, you must bring the effector (red ball) to the target area, earth. While travelling, you will find wild planets, asteroids and blackholes blocking your path. Do your best to figure out how to get back home!").show();
+        menuDesc.setText("This is the final level, good work so far! For this level, you must bring the effector (rocket) to the target area, earth. While travelling, you will find wild planets, asteroids and blackholes blocking your path. Do your best to figure out how to get back home!").show();
         menuTitle.setText("Sandbox").show() ;
         
         ui.addTextlabel("hint")
@@ -373,6 +373,17 @@ public class GUI{
             .setColorValue(0x00000000);
         
         toggleActive(false);
+    }
+
+    public void initEnd(){
+        for(ControllerInterface<?>  t: ui.getAll()){
+            t.hide();
+        }
+        switchHaptics(true);
+        welcomeTitle.setPosition(430, 100).setText("!! Congradulations !!").show();
+        welcomeText.setText("Thanks For Participating...!!! \n\nHope you now have a better understanding about collision mechanics and gravitational forces").show();
+        clearWorld();
+        isStart = false;
     }
 
     // Button Listeners
@@ -568,6 +579,11 @@ public class GUI{
         world.add(leftBoundary);
         world.add(rightBoundary);
 
+    }
+
+    public void endSim(){
+        currentLevel = 7;
+        isStart = true;
     }
 
     private void switchHaptics(boolean isOn){
