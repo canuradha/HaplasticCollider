@@ -39,12 +39,7 @@ public class GravityQuestions{
             "Force on Mass A until \ndistance 'd' then Force on B"
         });
 
-        // Answers.add(4);
-        // Answers.add(2);
-        // Answers.add(4);
-        // Answers.add(1);
         Answers = new int[] {3, 1, 3, 3};
-        // Answers = new int[] {3, 1, 3};
 
     }
 

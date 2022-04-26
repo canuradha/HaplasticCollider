@@ -39,10 +39,6 @@ public class CollisionQuestions{
             "None of the above"
         });
 
-        // Answers.add(4);
-        // Answers.add(2);
-        // Answers.add(4);
-        // Answers.add(1);
         Answers = new int[] {4, 2, 4, 1};
 
     }
