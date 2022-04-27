@@ -2,10 +2,12 @@
 
 This contains the full code for the Haplastic Collider Project (Group 3)
 
+![demoGIF](/Images/UIfinal.gif)
+
 ### Team Members/ Contributors
- - [Anuradha Herath](https://github.com/canuradha)
- - [Melissa Yu](https://github.com/meliss-yu)
- - [Kevin Gilmore](https://github.com/Gilmore-K)
+ - [Anuradha Herath](https://github.com/canuradha)  - [Blog](https://canuradha.github.io/CanHap2022-PersonalBlog/)
+ - [Melissa Yu](https://github.com/meliss-yu)       - [Blog](https://melissyu.wordpress.com/)
+ - [Kevin Gilmore](https://github.com/Gilmore-K)    - [Blog](https://canhapticsstudentblogkeving.wordpress.com/)
 
 ### About
 This is a Educational tool that can be used to enhance the Learning Experiance of mainly two basic concepts in Physics, Collisions (Elastic and Inelastic) and Gravitational Forces.
@@ -17,6 +19,4 @@ The system provides a simulated progressive self-learning platform that is to be
 - Questionnaire Module 2 (Including Gravitational Forces Simualtion)
 - Mini-Game Sandbox (A mini-game where the user needs to reach a goal successfully in an evironment where all the previously learned concepts are present)
 
-The Following video describes the functionality of the modules:
-
-https://www.youtube.com/embed/1Fv-DxxqwRw
+For a full demo click [here](https://www.youtube.com/watch?v=1Fv-DxxqwRw)
