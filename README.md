@@ -19,10 +19,4 @@ The system provides a simulated progressive self-learning platform that is to be
 
 The Following video describes the functionality of the modules:
 
-<iframe 
-    width="640" 
-    height="480" 
-    src="https://www.youtube.com/embed/1Fv-DxxqwRw" 
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-    allowfullscreen
-></iframe>
+https://www.youtube.com/embed/1Fv-DxxqwRw
